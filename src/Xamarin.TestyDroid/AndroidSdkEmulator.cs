@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
+using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -58,7 +60,17 @@ namespace Xamarin.TestyDroid
             }
         }
 
-        public void Start()
+        public async Task Start(TimeSpan timeout)
+        {
+            await Task.Factory.StartNew(StartEmulator)
+                .ContinueWith((startTask) =>
+                {
+                    WaitForBootComplete(timeout);
+                })
+                .ConfigureAwait(false);
+        }
+
+        private void StartEmulator()
         {
             if (IsRunning)
             {
@@ -99,7 +111,7 @@ namespace Xamarin.TestyDroid
                     _logger.LogMessage(string.Format("Device: {0}, emu.uuid: {1}", device.FullName(), id));
 
                     if (id == _id.ToString())
-                    {                       
+                    {
                         this.Device = device;
                         hasAttached = true;
                         _logger.LogMessage(string.Format("Device Attached"));
@@ -120,25 +132,48 @@ namespace Xamarin.TestyDroid
             {
                 throw new InvalidOperationException("Could not find attached device after emulator started..");
             }
-
-            // monitor boot complete
-
-
-
-
-            // poll for dev.bootcomplete
-
-            //adb -s your_device_name shell getprop emu.uuid
-
         }
 
         public void Stop()
         {
             if (IsRunning)
             {
+                this.KillDevice();
                 _emulatorProcess.Stop();
                 _emulatorProcess = null;
             }
+        }
+
+        private void KillDevice()
+        {
+            var device = this.Device;
+            if (device != null)
+            {
+                TcpClient client = new TcpClient("localhost", device.Port);
+                using (var stream = client.GetStream())
+                {
+
+                    byte[] results = new byte[100];
+                    var readCount = stream.Read(results, 0, 100);
+                    var resultText = Encoding.ASCII.GetString(results, 0, readCount);
+
+                    var command = Encoding.ASCII.GetBytes("kill" + Environment.NewLine);
+                    stream.Write(command, 0, command.Length);
+                    stream.Flush();
+
+                    //  readCount = stream.Read(results, 0, 100);
+                    //  resultText = Encoding.ASCII.GetString(results, 0, readCount);
+
+                    TimeSpan timeout = new TimeSpan(0, 0, 30);
+                    stream.Close((int)timeout.TotalMilliseconds);
+                }
+                client.Close();
+            }
+            else
+            {
+                throw new InvalidOperationException("Unable to kill device as device not yet attached.");
+            }
+
         }
 
         public void WaitForBootComplete(TimeSpan bootTimeOut)

@@ -8,6 +8,7 @@ namespace Xamarin.TestyDroid.Tests
 {
     public class TestConfig
     {
+        public static TimeSpan EmulatorStartupTimeout = new TimeSpan(0, 2, 0);
 
         public static string PathToAndroidSdk = @"C:\Program Files (x86)\Android\android-sdk";
         public static string PathToAndroidSdkTools = System.IO.Path.Combine(PathToAndroidSdk, "tools");

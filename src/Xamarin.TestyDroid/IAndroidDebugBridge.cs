@@ -10,5 +10,6 @@ namespace Xamarin.TestyDroid
     {
         string QueryProperty(AndroidDevice device, string propertyName);
         AndroidDevice[] GetDevices();
+        void KillDevice(AndroidDevice device);
     }
 }

@@ -72,5 +72,16 @@ namespace Xamarin.TestyDroid
             }
 
         }
+
+        public void KillDevice(AndroidDevice device)
+        {
+            StringBuilder args = new StringBuilder();
+            if (device != null)
+            {
+                args.AppendFormat("-s {0} ", device.FullName());
+            }
+            args.AppendFormat("emu kill");
+            _adbProcess.Start(args.ToString());
+        }
     }
 }

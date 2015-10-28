@@ -18,8 +18,6 @@ namespace Xamarin.TestyDroid.Tests
     public class EmulatorTests
     {
 
-       
-
         [Test]
         public void Can_Create_Android_Emulator()
         {
@@ -32,18 +30,19 @@ namespace Xamarin.TestyDroid.Tests
         }
 
         [Test]
-        public void Can_Start_And_Stop_Android_Emulator()
+        public async void Can_Start_And_Stop_Android_Emulator()
         {
             var logger = new ConsoleLogger();
             Guid emuId = Guid.NewGuid();
 
-
             var factory = new ProcessFactory(logger, TestConfig.PathToAndroidEmulatorExe, TestConfig.PathToAdbExe);
             IEmulator droidEmulator = factory.GetAndroidSdkEmulator(TestConfig.AvdName, 5554, true, false, emuId);
 
-            droidEmulator.Start();
-            Thread.Sleep(new TimeSpan(0, 0, 15));
-            droidEmulator.Stop();
+            await droidEmulator.Start(TestConfig.EmulatorStartupTimeout).ContinueWith((t) =>
+            {
+                droidEmulator.Stop();
+            });          
+           
         }
 
 
