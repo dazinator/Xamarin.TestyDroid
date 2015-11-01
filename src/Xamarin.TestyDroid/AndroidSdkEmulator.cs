@@ -149,6 +149,7 @@ namespace Xamarin.TestyDroid
             var device = this.Device;
             if (device != null)
             {
+                _logger.LogMessage(string.Format("Killing device: {0}", this.Device.FullName()));
                 TcpClient client = new TcpClient("localhost", device.Port);
                 using (var stream = client.GetStream())
                 {
@@ -157,13 +158,26 @@ namespace Xamarin.TestyDroid
                     var readCount = stream.Read(results, 0, 100);
                     var resultText = Encoding.ASCII.GetString(results, 0, readCount);
 
+                    _logger.LogMessage("Connected to device console.");
+                    _logger.LogMessage(resultText);
+
+                    _logger.LogMessage("Sending kill command.");
                     var command = Encoding.ASCII.GetBytes("kill" + Environment.NewLine);
                     stream.Write(command, 0, command.Length);
                     stream.Flush();
 
-                    //  readCount = stream.Read(results, 0, 100);
-                    //  resultText = Encoding.ASCII.GetString(results, 0, readCount);
-
+                    readCount = stream.Read(results, 0, 100);
+                    resultText = Encoding.ASCII.GetString(results, 0, readCount);
+                    _logger.LogMessage("Output from kill command to follow");
+                    _logger.LogMessage(resultText);
+                    if (resultText == "OK")
+                    {
+                        _logger.LogMessage("Device has been killed.");
+                    }
+                    else
+                    {
+                        throw new Exception(string.Format("Unable to kill emulator. Response from kill command was: {0}", resultText));
+                    }
                     TimeSpan timeout = new TimeSpan(0, 0, 30);
                     stream.Close((int)timeout.TotalMilliseconds);
                 }
@@ -171,6 +185,7 @@ namespace Xamarin.TestyDroid
             }
             else
             {
+                _logger.LogMessage("Cannot kill as no device attached.");
                 throw new InvalidOperationException("Unable to kill device as device not yet attached.");
             }
 
@@ -179,6 +194,7 @@ namespace Xamarin.TestyDroid
         public void WaitForBootComplete(TimeSpan bootTimeOut)
         {
             // block until finished booting.
+            _logger.LogMessage(string.Format("Waiting for device to complete boot up.. {0}", bootTimeOut));
             if (!IsRunning)
             {
                 throw new InvalidOperationException("Emulator must be started first.");
@@ -187,22 +203,39 @@ namespace Xamarin.TestyDroid
             var timeNow = DateTime.UtcNow;
             var endTime = timeNow.Add(bootTimeOut);
 
-            bool hasBooted = false;
+            WaitForProperty(endTime, "dev.bootcomplete", "1");
+            WaitForProperty(endTime, "sys.boot_completed", "1");
+            WaitForProperty(endTime, "init.svc.bootanim", "stopped");
+
+
+        }
+
+        public void WaitForProperty(DateTime expiryTime, string propertyName, string value)
+        {
+            // block until property value is set.
+            _logger.LogMessage(string.Format("Waiting for property: {0} to be set to: {1} (Will wait until = {2})", propertyName, value, expiryTime));
+            if (!IsRunning)
+            {
+                throw new InvalidOperationException("Emulator must be started first.");
+            }
+
+            bool hasBeenSet = false;
             TimeSpan pollingTime = new TimeSpan(0, 0, 3);
 
-            while (!hasBooted)
+            while (!hasBeenSet)
             {
                 var adb = _adbFactory();
-                string propertyResult = adb.QueryProperty(this.Device, "dev.bootcomplete");
-                if (propertyResult == "1")
+                string propertyResult = adb.QueryProperty(this.Device, propertyName);
+                if (propertyResult == value)
                 {
-                    hasBooted = true;
+                    hasBeenSet = true;
+                    _logger.LogMessage("Property has been set.");
                 }
                 else
                 {
-                    if (DateTime.UtcNow.Add(pollingTime) > endTime)
+                    if (DateTime.UtcNow.Add(pollingTime) > expiryTime)
                     {
-                        throw new TimeoutException(string.Format("Emulator did not manage to completely boot within the allotted timeout of: {0} (hh:mm:ss)", bootTimeOut));
+                        throw new TimeoutException("Emulator did not manage to boot within the allotted timeout.");
                     }
                     Thread.Sleep(pollingTime);
                 }
