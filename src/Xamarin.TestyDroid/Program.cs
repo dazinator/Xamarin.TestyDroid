@@ -24,7 +24,7 @@ namespace Xamarin.TestyDroid
                 args[5] = @"C:\Users\Darrell\Repo\Xamarin.TestyDroid\src\Xamarin.TestyDroid.TestTests\bin\Release\Xamarin.TestyDroid.TestTests-Signed.apk";
                 args[6] = "-i";
                 args[7] = "AVD_GalaxyNexus_ToolsForApacheCordova";
-                args[8] = "-p";
+                args[8] = "-n";
                 args[9] = "xamarin.testydroid.testtests";
                 args[10] = "-c";
                 args[11] = "xamarin.testydroid.testtests.TestInstrumentation";
@@ -49,7 +49,7 @@ namespace Xamarin.TestyDroid
 
                 if (options.EmulatorType == "sdk")
                 {
-                    droidEmulator = factory.GetAndroidSdkEmulator(options.ImageName, 5554, true, false, emuId);
+                    droidEmulator = factory.GetAndroidSdkEmulator(options.ImageName, options.PortNumber, true, false, emuId);
                 }
                 else
                 {

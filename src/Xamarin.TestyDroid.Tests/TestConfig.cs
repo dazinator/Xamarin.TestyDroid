@@ -18,7 +18,7 @@ namespace Xamarin.TestyDroid.Tests
 
         public static string AvdName = "AVD_GalaxyNexus_ToolsForApacheCordova";
         public static string AndroidTestsPackageName = "xamarin.testydroid.testtests";
-        public static string PathToAndroidTestsApk = @"\Xamarin.TestyDroid.TestTests\bin\release\xamarin.testydroid.testtests-Signed.apk";
+        public static string PathToAndroidTestsApk = @"Xamarin.TestyDroid.TestTests\bin\release\xamarin.testydroid.testtests-Signed.apk";
         public static string AndroidTestsInstrumentationClassPath = @"xamarin.testydroid.testtests.TestInstrumentation";
 
 

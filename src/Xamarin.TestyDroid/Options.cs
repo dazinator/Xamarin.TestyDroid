@@ -42,7 +42,7 @@ namespace Xamarin.TestyDroid
         /// <summary>
         /// The name of the AVD image to launch in the emulator.
         /// </summary>
-        [Option('p', "packagename", Required = true, HelpText = "The package name of your apk package as per it's manifest..")]
+        [Option('n', "name", Required = true, HelpText = "The package name of your apk package as per it's manifest..")]
         public string ApkPackageName { get; set; }
 
         /// <summary>
@@ -60,7 +60,8 @@ namespace Xamarin.TestyDroid
         [Option('v', "verbose", HelpText = "Enable verbose output to the console during execution.")]
         public bool Verbose { get; set; }
 
-
+        [Option('p', "portnumber", Required = false, DefaultValue = 5554, HelpText = "The port number that the android console will be listening on, on localhost. The default is 5554.")]
+        public int PortNumber { get; set; }
 
         [HelpOption]
         public string GetUsage()
@@ -73,47 +74,6 @@ namespace Xamarin.TestyDroid
         }
 
     }
-
-
-    public class AndroidSdkEmulatorOptions
-    {
-        [Option('p', "emulatorpath", Required = true, HelpText = "The full path to emulator.exe")]
-        public string EmulatorExePath { get; set; }
-
-
-
-        [Option('p', "password", Required = false, DefaultValue = "x-oauth-basic", HelpText = "Your password. Defaults to x-oauth-basic if not specified - which allows an access token to be used as the username.")]
-        public string Password { get; set; }
-
-        [Option('o', "owner", Required = true, HelpText = "The username of the repo owner.")]
-        public string Owner { get; set; }
-
-        [Option('r', "repo", Required = true, HelpText = "The repository name.")]
-        public string RepoName { get; set; }
-
-        [Option('t', "tag", Required = true, HelpText = "The tag name. This tag must already exist.")]
-        public string TagName { get; set; }
-
-        [Option('n', "name", Required = true, HelpText = "The name given to the release.")]
-        public string ReleaseName { get; set; }
-
-        [Option('d', "desc", Required = false, HelpText = "The description for the release.")]
-        public string Description { get; set; }
-
-        [Option('f', "filedesc", Required = false, HelpText = "The path to a file containing the description for this release.")]
-        public string DescriptionFile { get; set; }
-
-        [Option('l', "draft", Required = false, HelpText = "creates the release as a draft release.")]
-        public bool Draft { get; set; }
-
-        [Option('e', "pre", Required = false, HelpText = "creates the release as a pre-release.")]
-        public bool PreRelease { get; set; }
-
-        [Option('v', "verbose", HelpText = "Enable verbose output to the console during execution.")]
-        public bool Verbose { get; set; }
-
-        [OptionList('a', "assetfiles", Separator = ',', HelpText = "Upload one or more files as assets against the release. To specify more than one file, seperate the filenames with a comma. For example: c:/myfile.txt,c:/myotherfile.txt")]
-        public IList<string> ReleaseAssetFiles { get; set; }
-    }
+   
 
 }

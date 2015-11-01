@@ -19,6 +19,7 @@ namespace Xamarin.TestyDroid
         private int? _consolePort;
         private Func<IAndroidDebugBridge> _adbFactory;
         private IProcess _emulatorProcess;
+        private AndroidDevice _androidDevice;
 
         public AndroidSdkEmulator(ILogger logger, IProcess androidEmulatorProcess, Func<IAndroidDebugBridge> adbFactory, Guid id, int? consolePort)
         {
@@ -112,7 +113,7 @@ namespace Xamarin.TestyDroid
 
                     if (id == _id.ToString())
                     {
-                        this.Device = device;
+                        _androidDevice = device;
                         hasAttached = true;
                         _logger.LogMessage(string.Format("Device Attached"));
                     }
@@ -146,10 +147,10 @@ namespace Xamarin.TestyDroid
 
         private void KillDevice()
         {
-            var device = this.Device;
+            var device = this._androidDevice;
             if (device != null)
             {
-                _logger.LogMessage(string.Format("Killing device: {0}", this.Device.FullName()));
+                _logger.LogMessage(string.Format("Killing device: {0}", device.FullName()));
                 TcpClient client = new TcpClient("localhost", device.Port);
                 using (var stream = client.GetStream())
                 {
@@ -242,7 +243,7 @@ namespace Xamarin.TestyDroid
             }
         }
 
-        public AndroidDevice Device { get; protected set; }
+        public Device Device { get { return _androidDevice; } }
 
     }
 }

@@ -1,11 +1,33 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace Xamarin.TestyDroid
 {
+    [Flags]
+    public enum AdbInstallFlags
+    {
+        [Description("")]
+        None = 0,
+        [Description("-l")]
+        ForwardLockApplication = 1,
+        [Description("-r")]
+        ReplaceExistingApplication = 2,
+        [Description("-t")]
+        AllowTestPackages = 4,
+        [Description("-s")]
+        InstallApplicationOnSDCard = 8,
+        [Description("-d")]
+        AllowVersionCodeDowngrade = 16,
+        [Description("-g")]
+        GrantAllRuntimePermissions = 32
+    }
+
+
     public class AndroidDebugBridge : IAndroidDebugBridge
     {
         private IProcess _adbProcess;
@@ -15,7 +37,7 @@ namespace Xamarin.TestyDroid
             _adbProcess = adbProcess;
         }
 
-        public string QueryProperty(AndroidDevice device, string propertyName)
+        public string QueryProperty(Device device, string propertyName)
         {
             StringBuilder args = new StringBuilder();
             if (device != null)
@@ -73,7 +95,7 @@ namespace Xamarin.TestyDroid
 
         }
 
-        public void KillDevice(AndroidDevice device)
+        public void KillDevice(Device device)
         {
             StringBuilder args = new StringBuilder();
             if (device != null)
@@ -82,6 +104,74 @@ namespace Xamarin.TestyDroid
             }
             args.AppendFormat("emu kill");
             _adbProcess.Start(args.ToString());
+        }
+
+        public bool Install(Device device, string apkFilePath, AdbInstallFlags installFlags = AdbInstallFlags.None)
+        {
+            StringBuilder args = new StringBuilder();
+            if (device != null)
+            {
+                args.AppendFormat("-s {0} ", device.FullName());
+            }
+            args.Append("install ");
+
+            if (installFlags != AdbInstallFlags.None)
+            {
+                var enums = Enum.GetValues(typeof(AdbInstallFlags));
+                foreach (var installFlag in enums)
+                {
+                    // get description attribute
+                    Enum flag = (AdbInstallFlags)installFlag;
+                    if ((AdbInstallFlags)flag == AdbInstallFlags.None)
+                    {
+                        continue;
+                    }
+                    if (installFlags.HasFlag(flag))
+                    {
+                        string enumDesc = GetEnumDescription(flag);
+                        args.AppendFormat("{0} ", enumDesc);
+                    }
+                }
+            }
+
+
+            args.AppendFormat("\"{0}\"", apkFilePath);
+
+            StringBuilder output = new StringBuilder();
+            _adbProcess.Start(args.ToString());
+
+            _adbProcess.ListenToStandardOut((outMessage) =>
+            {
+                output.AppendLine(outMessage);
+            });
+
+            _adbProcess.WaitForExit();
+
+            if (!string.IsNullOrWhiteSpace(output.ToString()))
+            {
+                if (output.ToString().Contains("Success"))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        public static string GetEnumDescription(Enum value)
+        {
+            FieldInfo fi = value.GetType().GetField(value.ToString());
+
+            DescriptionAttribute[] attributes =
+                (DescriptionAttribute[])fi.GetCustomAttributes(
+                typeof(DescriptionAttribute),
+                false);
+
+            if (attributes != null &&
+                attributes.Length > 0)
+                return attributes[0].Description;
+            else
+                return value.ToString();
         }
     }
 }

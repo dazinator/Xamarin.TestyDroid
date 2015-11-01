@@ -6,10 +6,10 @@ using System.Linq;
 
 namespace Xamarin.TestyDroid.Tests
 {
-   
+
     [TestFixture]
     public class AndroidDebugBridgeTests
-    {       
+    {
         [Test]
         public async void Can_Get_Devices()
         {
@@ -19,7 +19,7 @@ namespace Xamarin.TestyDroid.Tests
             // Start an emulator.
             var factory = new ProcessFactory(logger, TestConfig.PathToAndroidEmulatorExe, TestConfig.PathToAdbExe);
             int consolePort = 5554;
-            
+
             using (IEmulator droidEmulator = factory.GetAndroidSdkEmulator(TestConfig.AvdName, consolePort, true, false, emuId))
             {
                 await droidEmulator.Start(TestConfig.EmulatorStartupTimeout).ContinueWith((t) =>
@@ -41,11 +41,43 @@ namespace Xamarin.TestyDroid.Tests
 
                 });
 
-             
+
             }
 
-               
-        }     
+
+        }
+
+        [Test]
+        public async void Can_Install_Apk()
+        {
+            var logger = new ConsoleLogger();
+            Guid emuId = Guid.NewGuid();
+
+            // Start an emulator.
+            var factory = new ProcessFactory(logger, TestConfig.PathToAndroidEmulatorExe, TestConfig.PathToAdbExe);
+            int consolePort = 5554;
+
+            using (IEmulator droidEmulator = factory.GetAndroidSdkEmulator(TestConfig.AvdName, consolePort, true, false, emuId))
+            {
+                await droidEmulator.Start(TestConfig.EmulatorStartupTimeout).ContinueWith((t) =>
+                {
+                    // sut
+                    var adb = factory.GetAndroidDebugBridge();
+                    var currentDir = Environment.CurrentDirectory;
+
+                    var apkPath = System.IO.Path.Combine(currentDir, "..\\..\\..\\", TestConfig.PathToAndroidTestsApk);
+
+                    var installed = adb.Install(droidEmulator.Device, apkPath, AdbInstallFlags.ReplaceExistingApplication);
+                    Assert.That(installed, Is.EqualTo(true));
+
+
+                });
+
+
+            }
+
+
+        }
 
     }
 }

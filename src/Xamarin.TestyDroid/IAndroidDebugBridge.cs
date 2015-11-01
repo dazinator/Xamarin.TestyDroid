@@ -8,8 +8,9 @@ namespace Xamarin.TestyDroid
 {
     public interface IAndroidDebugBridge
     {
-        string QueryProperty(AndroidDevice device, string propertyName);
+        string QueryProperty(Device device, string propertyName);
         AndroidDevice[] GetDevices();
-        void KillDevice(AndroidDevice device);
+        void KillDevice(Device device);
+        bool Install(Device device, string apkFilePath, AdbInstallFlags installFlags = AdbInstallFlags.None);
     }
 }

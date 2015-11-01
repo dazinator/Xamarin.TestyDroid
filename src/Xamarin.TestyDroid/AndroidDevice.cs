@@ -6,13 +6,19 @@ using System.Threading.Tasks;
 
 namespace Xamarin.TestyDroid
 {
-    public class AndroidDevice
+
+    public abstract class Device
+    {
+        public abstract string FullName();       
+    }
+
+    public class AndroidDevice : Device
     {
         public string Name { get; set; }
         public string Status { get; set; }
         public int Port { get; set; }
 
-        public string FullName()
+        public override string FullName()
         {
             return string.Format("{0}-{1}", Name, Port);
         }
