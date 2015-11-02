@@ -60,3 +60,9 @@ Call Xamarin.TestyDroid.exe from the command line, with the following arguments:
 
 ```
 
+Example:
+
+`Xamarin.TestyDroid.exe -e "C:\Program Files (x86)\Android\android-sdk\tools\emulator.exe" -d "C:\Program Files (x86)\Android\android-sdk\platform-tools\adb.exe" -f "C:\Users\Darrell\Repo\Xamarin.TestyDroid\src\Xamarin.TestyDroid.TestTests\bin\Release\Xamarin.TestyDroid.TestTests-Signed.apk" -i "AVD_GalaxyNexus_ToolsForApacheCordova" -n "xamarin.testydroid.testtests" -c "xamarin.testydroid.testtests.TestInstrumentation" -w 120 -v`
+
+
+
