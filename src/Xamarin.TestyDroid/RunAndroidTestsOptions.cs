@@ -12,7 +12,7 @@ namespace Xamarin.TestyDroid
     public class RunAndroidTestsOptions
     {
 
-        [Option('t', "emulatortype", Required = false, DefaultValue = "sdk", HelpText = "The type of emulator to run the tests on.  Default is 'sdk'")]
+        [Option('t', "emulatortype", Required = false, DefaultValue = "sdk", HelpText = "The type of emulator to run the tests on. In future may support Microsoft's Emulator.")]
         public string EmulatorType { get; set; }
 
         /// <summary>
@@ -42,7 +42,7 @@ namespace Xamarin.TestyDroid
         /// <summary>
         /// The name of the AVD image to launch in the emulator.
         /// </summary>
-        [Option('n', "name", Required = true, HelpText = "The package name of your apk package as per it's manifest..")]
+        [Option('n', "name", Required = true, HelpText = "The package name of your apk package as per it's manifest.")]
         public string ApkPackageName { get; set; }
 
         /// <summary>
@@ -60,7 +60,7 @@ namespace Xamarin.TestyDroid
         [Option('v', "verbose", HelpText = "Enable verbose output to the console during execution.")]
         public bool Verbose { get; set; }
 
-        [Option('p', "portnumber", Required = false, DefaultValue = 5554, HelpText = "The port number that the android console will be listening on, on localhost. The default is 5554.")]
+        [Option('p', "portnumber", Required = false, DefaultValue = 5554, HelpText = "The port number that the android console will be listening on, on localhost.")]
         public int PortNumber { get; set; }
 
         [HelpOption]

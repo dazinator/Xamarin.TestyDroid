@@ -6,10 +6,10 @@ using System.Threading.Tasks;
 
 namespace Xamarin.TestyDroid
 {
-    public interface ITestRunner
+    public class TestResult
     {
-        TestResults RunTests();
+        public string Name { get; set; }
+        public string Detail { get; set; }
+        public TestResultKind Kind { get; set; }
     }
-
-
 }

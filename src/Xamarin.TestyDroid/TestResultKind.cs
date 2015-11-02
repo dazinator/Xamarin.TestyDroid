@@ -6,10 +6,11 @@ using System.Threading.Tasks;
 
 namespace Xamarin.TestyDroid
 {
-    public interface ITestRunner
+    public enum TestResultKind
     {
-        TestResults RunTests();
+        Failure,
+        Passed,
+        Skipped,
+        Inconclusive
     }
-
-
 }

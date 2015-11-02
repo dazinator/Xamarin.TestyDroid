@@ -16,9 +16,7 @@ namespace Xamarin.TestyDroid
             _TestResults = new TestResults();
         }
 
-        private StringBuilder _builder;
-
-        private bool isReadingFailure;
+        private StringBuilder _builder;    
 
 
         public void Append(string output)
@@ -125,49 +123,6 @@ namespace Xamarin.TestyDroid
 
         public TestResults TestResults { get { return _TestResults; } }
 
-    }
-
-    public class TestResults
-    {
-        public TestResults()
-        {
-            Tests = new List<TestResult>();
-        }
-
-        public void AppendFailedTest(string resultTestName, string resultDetailSection)
-        {
-            var testResult = new TestResult();
-            testResult.Kind = TestResultKind.Failure;
-            testResult.Name = resultTestName;
-            testResult.Detail = resultDetailSection;
-            this.Tests.Add(testResult);
-        }
-
-        public void AppendTest(TestResultKind kind, string testName, string details)
-        {
-            var testResult = new TestResult();
-            testResult.Kind = kind;
-            testResult.Name = testName;
-            testResult.Detail = details;
-            this.Tests.Add(testResult);
-        }
-
-        public List<TestResult> Tests { get; set; }
-    }
-
-    public class TestResult
-    {
-        public string Name { get; set; }
-        public string Detail { get; set; }
-        public TestResultKind Kind { get; set; }
-    }
-
-    public enum TestResultKind
-    {
-        Failure,
-        Passed,
-        Skipped,
-        Inconclusive
-    }
+    }  
 
 }
