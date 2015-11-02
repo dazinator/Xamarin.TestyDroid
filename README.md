@@ -9,7 +9,7 @@ TestyDroid is a small command line tool, to handle running your unit tests on an
 6. It will ensure the emulator is terminated afterwards.
 
 
-Test Results are reported to `STDOUT` via the default reported.
+Test Results are reported to `STDOUT` via the default reporter.
 However there is the option to use the `TeamCity` reported, in which case results will be reported using Team City Contol messages and will appear in Team City.
 
 Open to supporting other build systems via custom Reporters.
