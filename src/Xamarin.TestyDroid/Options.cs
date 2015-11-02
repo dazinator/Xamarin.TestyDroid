@@ -48,13 +48,13 @@ namespace Xamarin.TestyDroid
         /// <summary>
         /// The class path for your android test instruemntation class.
         /// </summary>
-        [Option('c', "instrumentationclasspath", Required = true, HelpText = "The class path to the instrumentation class inside your tests apk.")]
+        [Option('c', "instrumentationclasspath", Required = true, HelpText = "The class path to the instrumentation class inside your tests apk. This should include the namespace (in lower case) and then the class name (case sensitive). E.g xamarin.testydroid.testtests.TestInstrumentation")]
         public string TestInstrumentationClassPath { get; set; }
 
         /// <summary>
         /// The number of seconds to wait for the emulator to startup.
         /// </summary>
-        [Option('w', "emulatorwaittime", Required = false, DefaultValue = 120, HelpText = "The number of seconds to wait for the emulator to start up.")]
+        [Option('w', "emulatorwaittime", Required = false, DefaultValue = 120, HelpText = "The maximum number of seconds to wait for the emulator to start up before timing out.")]
         public int EmulatorStartupWaitTimeInSeconds { get; set; }
 
         [Option('v', "verbose", HelpText = "Enable verbose output to the console during execution.")]

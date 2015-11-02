@@ -66,6 +66,8 @@ namespace Xamarin.TestyDroid
             else
             {
                 Console.WriteLine("Failed to parse args, see usage.");
+                Console.WriteLine(options.GetUsage());
+               
                 return -1;
             }
 
