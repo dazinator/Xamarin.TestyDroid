@@ -24,8 +24,11 @@ namespace Xamarin.TestyDroid.Tests
             var logger = new ConsoleLogger();
             Guid emuId = Guid.NewGuid();
 
-            var factory = new ProcessFactory(logger, TestConfig.PathToAndroidEmulatorExe, TestConfig.PathToAdbExe);
-            IEmulator droidEmulator = factory.GetAndroidSdkEmulator(TestConfig.AvdName, 5554, true, false, emuId);
+            var adbFactory = new AndroidDebugBridgeFactory(TestConfig.PathToAdbExe);
+            int consolePort = 5554;
+            var emuFactory = new AndroidSdkEmulatorFactory(logger, TestConfig.PathToAndroidEmulatorExe, adbFactory, TestConfig.AvdName, consolePort, true, false, emuId);
+         
+            IEmulator droidEmulator = emuFactory.GetEmulator();
 
         }
 
@@ -35,14 +38,16 @@ namespace Xamarin.TestyDroid.Tests
             var logger = new ConsoleLogger();
             Guid emuId = Guid.NewGuid();
 
-            var factory = new ProcessFactory(logger, TestConfig.PathToAndroidEmulatorExe, TestConfig.PathToAdbExe);
-            IEmulator droidEmulator = factory.GetAndroidSdkEmulator(TestConfig.AvdName, 5554, true, false, emuId);
+            var adbFactory = new AndroidDebugBridgeFactory(TestConfig.PathToAdbExe);
+            int consolePort = 5554;
+            var emuFactory = new AndroidSdkEmulatorFactory(logger, TestConfig.PathToAndroidEmulatorExe, adbFactory, TestConfig.AvdName, consolePort, true, false, emuId);
 
+            IEmulator droidEmulator = emuFactory.GetEmulator();
             await droidEmulator.Start(TestConfig.EmulatorStartupTimeout).ContinueWith((t) =>
             {
                 droidEmulator.Stop();
-            });          
-           
+            });
+
         }
 
 

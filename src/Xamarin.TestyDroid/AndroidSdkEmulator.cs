@@ -17,11 +17,11 @@ namespace Xamarin.TestyDroid
         private Guid _id;
         private bool _isBootComplete;
         private int? _consolePort;
-        private Func<IAndroidDebugBridge> _adbFactory;
+        private IAndroidDebugBridgeFactory _adbFactory;
         private IProcess _emulatorProcess;
         private AndroidDevice _androidDevice;
 
-        public AndroidSdkEmulator(ILogger logger, IProcess androidEmulatorProcess, Func<IAndroidDebugBridge> adbFactory, Guid id, int? consolePort)
+        public AndroidSdkEmulator(ILogger logger, IProcess androidEmulatorProcess, IAndroidDebugBridgeFactory adbFactory, Guid id, int? consolePort)
         {
             _logger = logger;
             _emulatorProcess = androidEmulatorProcess;
@@ -66,7 +66,10 @@ namespace Xamarin.TestyDroid
             await Task.Factory.StartNew(StartEmulator)
                 .ContinueWith((startTask) =>
                 {
-                    WaitForBootComplete(timeout);
+                    if(!startTask.IsFaulted)
+                    {
+                        WaitForBootComplete(timeout);
+                    }                   
                 })
                 .ConfigureAwait(false);
         }
@@ -81,11 +84,16 @@ namespace Xamarin.TestyDroid
             _logger.LogMessage(string.Format("Starting emulator: {0} {1}", _emulatorProcess.FileName, _emulatorProcess.Arguments));
             _emulatorProcess.Start();
 
+            StringBuilder stdOut = new StringBuilder();
+            StringBuilder errorOut = new StringBuilder();
+            _emulatorProcess.ListenToStandardOut((s) => stdOut.AppendLine(s));
+            _emulatorProcess.ListenToStandardError((s) => errorOut.AppendLine(s));
+
             // Now get the devices..
             _logger.LogMessage(string.Format("Finding attached Adb Device: {0}", _id));
 
             // poll for attached device.
-            var adb = _adbFactory();
+            var adb = _adbFactory.GetAndroidDebugBridge();
 
             var timeNow = DateTime.UtcNow;
             var pollTimeout = new TimeSpan(0, 0, 30);
@@ -225,7 +233,7 @@ namespace Xamarin.TestyDroid
 
             while (!hasBeenSet)
             {
-                var adb = _adbFactory();
+                var adb = _adbFactory.GetAndroidDebugBridge();
                 string propertyResult = adb.QueryProperty(this.Device, propertyName);
                 if (propertyResult == value)
                 {

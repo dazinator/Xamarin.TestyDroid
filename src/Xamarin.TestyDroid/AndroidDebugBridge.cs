@@ -8,26 +8,6 @@ using System.Threading.Tasks;
 
 namespace Xamarin.TestyDroid
 {
-    [Flags]
-    public enum AdbInstallFlags
-    {
-        [Description("")]
-        None = 0,
-        [Description("-l")]
-        ForwardLockApplication = 1,
-        [Description("-r")]
-        ReplaceExistingApplication = 2,
-        [Description("-t")]
-        AllowTestPackages = 4,
-        [Description("-s")]
-        InstallApplicationOnSDCard = 8,
-        [Description("-d")]
-        AllowVersionCodeDowngrade = 16,
-        [Description("-g")]
-        GrantAllRuntimePermissions = 32
-    }
-
-
     public class AndroidDebugBridge : IAndroidDebugBridge
     {
         private IProcess _adbProcess;
@@ -172,6 +152,37 @@ namespace Xamarin.TestyDroid
                 return attributes[0].Description;
             else
                 return value.ToString();
+        }
+
+        public string StartInstrument(Device device, string packageName, string runnerClass, Action<string> onStdOut)
+        {
+            //   &quot;$(AndroidDebugBridgeExePath) & quot; shell am instrument - w $(AndroidTestsManifestPackageName) /$(AndroidTestsInstrumentationClassPath)
+            StringBuilder args = new StringBuilder();
+            if (device != null)
+            {
+                args.AppendFormat("-s {0} ", device.FullName());
+            }
+            args.Append("shell am instrument -w ");
+            //if (waitForFinish)
+            //{
+            //    args.Append("-w ");
+            //}
+
+            args.AppendFormat("{0}/{1}", packageName, runnerClass);
+
+            StringBuilder output = new StringBuilder();
+            _adbProcess.Start(args.ToString());
+
+            _adbProcess.ListenToStandardOut((outMessage) =>
+            {
+                output.AppendLine(outMessage);
+                onStdOut(outMessage);
+            });
+
+            _adbProcess.WaitForExit();
+
+            return output.ToString();
+
         }
     }
 }

@@ -43,13 +43,14 @@ namespace Xamarin.TestyDroid
                 var logger = new ConsoleLogger(options.Verbose);
                 Guid emuId = Guid.NewGuid();
 
-                var factory = new ProcessFactory(logger, options.EmulatorExePath, options.AdbExePath);
+                var adbFactory = new AndroidDebugBridgeFactory(options.AdbExePath);
 
-                IEmulator droidEmulator;
+                IEmulatorFactory emulatorFactory;
+               
 
                 if (options.EmulatorType == "sdk")
                 {
-                    droidEmulator = factory.GetAndroidSdkEmulator(options.ImageName, options.PortNumber, true, false, emuId);
+                    emulatorFactory = new AndroidSdkEmulatorFactory(logger, options.EmulatorExePath, adbFactory, options.ImageName, options.PortNumber, true, false, emuId);                   
                 }
                 else
                 {
@@ -57,6 +58,7 @@ namespace Xamarin.TestyDroid
                     return -1;
                 }
 
+                IEmulator droidEmulator = emulatorFactory.GetEmulator();
                 StartEmulatorAndRunTests(droidEmulator, options);
                 return 0;
 
@@ -75,6 +77,7 @@ namespace Xamarin.TestyDroid
             using (droidEmulator)
             {
                 droidEmulator.Start(timeout).Wait();
+                
                 droidEmulator.Stop();
             }
 

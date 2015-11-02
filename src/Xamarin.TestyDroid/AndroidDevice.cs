@@ -37,7 +37,7 @@ namespace Xamarin.TestyDroid
 
                     var devicePartsNamePart = deviceParts[0];
 
-                    var portSeperator = new string[] { "-" };
+                    var portSeperator = new string[] { "-" , ":"};
                     var nameParts = devicePartsNamePart.Split(portSeperator, StringSplitOptions.RemoveEmptyEntries);
 
                     if (nameParts.Length > 0)

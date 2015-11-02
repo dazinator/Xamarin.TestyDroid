@@ -12,5 +12,7 @@ namespace Xamarin.TestyDroid
         AndroidDevice[] GetDevices();
         void KillDevice(Device device);
         bool Install(Device device, string apkFilePath, AdbInstallFlags installFlags = AdbInstallFlags.None);
+        string StartInstrument(Device device, string packageName, string runnerClass, Action<string> onStdOut);       
+
     }
 }
