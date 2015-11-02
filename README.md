@@ -1,6 +1,6 @@
 # Xamarin.TestyDroid
 
-TestyDroid is a small command line, to handle running your unit tests on an android device during CI builds.
+TestyDroid is a small command line tool, to handle running your unit tests on an android device during CI builds.
 
 1. It will start the android emulator
 2. It will load the desired AVD and detect when it has successfully booted.
