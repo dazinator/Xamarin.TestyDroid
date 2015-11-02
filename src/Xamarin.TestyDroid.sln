@@ -3,11 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
 VisualStudioVersion = 14.0.23107.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xamarin.TestyDroid", "Xamarin.TestyDroid\Xamarin.TestyDroid.csproj", "{A3C86B8A-4CD0-4727-8AAA-3A4A4FFB9E05}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestyDroid", "Xamarin.TestyDroid\TestyDroid.csproj", "{A3C86B8A-4CD0-4727-8AAA-3A4A4FFB9E05}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xamarin.TestyDroid.TestTests", "Xamarin.TestyDroid.TestTests\Xamarin.TestyDroid.TestTests.csproj", "{C3B1B714-EA20-4BA3-813C-81449F79C6C5}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestyDroid.TestTests", "Xamarin.TestyDroid.TestTests\TestyDroid.TestTests.csproj", "{C3B1B714-EA20-4BA3-813C-81449F79C6C5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xamarin.TestyDroid.Tests", "Xamarin.TestyDroid.Tests\Xamarin.TestyDroid.Tests.csproj", "{EAC0E10F-EF21-4A37-A944-ACA014A6C4F7}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestyDroid.Tests", "Xamarin.TestyDroid.Tests\TestyDroid.Tests.csproj", "{EAC0E10F-EF21-4A37-A944-ACA014A6C4F7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
