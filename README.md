@@ -48,8 +48,8 @@ Call Xamarin.TestyDroid.exe from the command line, with the following arguments:
 
                                     tion
 
-  -w, --emulatorwaittime            (Default: 120) The number of seconds to
-                                    wait for the emulator to start up.
+  -w, --emulatorwaittime            (Default: 120) The maximum number of seconds to
+                                    wait for the emulator to start up before timing out.
 
   -v, --verbose                     Enable verbose output to the console during
                                     execution.
