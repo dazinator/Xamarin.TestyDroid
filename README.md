@@ -10,7 +10,7 @@ TestyDroid is a small command line tool, to handle running your unit tests on an
 
 
 Test Results are reported to `STDOUT` via the default reporter.
-However there is the option to use the `TeamCity` reporter, in which case results will be reported using Team City Control messages and so will appear in Team City.
+However there is the option to use the `TeamCity` reporter, in which case results will be reported using Team City Control messages and so will appear in Team City if invoked during the Team City build.
 
 Open to supporting other build systems via custom Reporters.
 
