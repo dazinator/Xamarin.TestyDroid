@@ -65,7 +65,7 @@
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="BeforeBuild">
     <PropertyGroup>
-      <AndroidTestsProject Condition="$(AndroidTestsProject) == ''">$(SolutionDir)\Xamarin.TestyDroid.TestTests\Xamarin.TestyDroid.TestTests.csproj</AndroidTestsProject>
+      <AndroidTestsProject Condition="$(AndroidTestsProject) == ''">$(SolutionDir)\Xamarin.TestyDroid.TestTests\TestyDroid.TestTests.csproj</AndroidTestsProject>
     </PropertyGroup>
     <ItemGroup>
       <ProjectReferences Include="$(AndroidTestsProject)" />
