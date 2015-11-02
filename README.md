@@ -22,7 +22,7 @@ Call Xamarin.TestyDroid.exe from the command line, with the following arguments:
 ```
 
   -t, --emulatortype                (Default: sdk) The type of emulator to run
-                                    the tests on.  Default is 'sdk'
+                                    the tests on.
 
   -e, --emulatorexepath             Required. The full path to the emulator
                                     exe.
@@ -44,9 +44,7 @@ Call Xamarin.TestyDroid.exe from the command line, with the following arguments:
                                     apk. This should include the namespace (in
                                     lower case) and then the class name (case
                                     sensitive). E.g
-                                    xamarin.testydroid.testtests.TestInstrumenta
-
-                                    tion
+                                    xamarin.testydroid.testtests.TestInstrumentation
 
   -w, --emulatorwaittime            (Default: 120) The maximum number of seconds to
                                     wait for the emulator to start up before timing out.
@@ -56,7 +54,7 @@ Call Xamarin.TestyDroid.exe from the command line, with the following arguments:
 
   -p, --portnumber                  (Default: 5554) The port number that the
                                     android console will be listening on, on
-                                    localhost. The default is 5554.
+                                    localhost.
 
   --help                            Display this help screen.
 
