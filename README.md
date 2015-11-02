@@ -15,3 +15,50 @@ However there is the option to use the `TeamCity` reporter, in which case result
 Open to supporting other build systems via custom Reporters.
 
 
+# Usage
+
+Call Xamarin.TestyDroid.exe from the command line, with the following arguments:
+
+```
+
+  -t, --emulatortype                (Default: sdk) The type of emulator to run
+                                    the tests on.  Default is 'sdk'
+
+  -e, --emulatorexepath             Required. The full path to the emulator
+                                    exe.
+
+  -d, --debugbridgepath             Required. The full path to android debug
+                                    bride (adb.exe)
+
+  -f, --apkfile                     Required. The full path to the .apk file
+                                    containing your tests that should be run.
+
+  -i, --imagename                   Required. The name of the avd image to
+                                    launch in the emulator.
+
+  -n, --name                        Required. The package name of your apk
+                                    package as per it's manifest..
+
+  -c, --instrumentationclasspath    Required. The class path to the
+                                    instrumentation class inside your tests
+                                    apk. This should include the namespace (in
+                                    lower case) and then the class name (case
+                                    sensitive). E.g
+                                    xamarin.testydroid.testtests.TestInstrumenta
+
+                                    tion
+
+  -w, --emulatorwaittime            (Default: 120) The number of seconds to
+                                    wait for the emulator to start up.
+
+  -v, --verbose                     Enable verbose output to the console during
+                                    execution.
+
+  -p, --portnumber                  (Default: 5554) The port number that the
+                                    android console will be listening on, on
+                                    localhost. The default is 5554.
+
+  --help                            Display this help screen.
+
+```
+
