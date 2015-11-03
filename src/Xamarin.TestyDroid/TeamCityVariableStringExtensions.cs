@@ -24,31 +24,22 @@ namespace Xamarin.TestyDroid
             //  ] (closing bracket)	|]
 
             // Escape pipes first.
-            variableValue = EscapeTeamCitySpecialCharacter(variableValue, '|');
-
-            variableValue = EscapeTeamCitySpecialCharacter(variableValue, '\'');
+            variableValue = EscapeTeamCitySpecialCharacter(variableValue, '|', "||");
+            variableValue = EscapeTeamCitySpecialCharacter(variableValue, '\'', "|'");
             variableValue = EscapeTeamCityLineFeed(variableValue);
             variableValue = EscapeTeamCityCarriageReturn(variableValue);
             variableValue = EscapeTeamCitySpecialCharacter(variableValue, '\u0085', "|x");
             variableValue = EscapeTeamCitySpecialCharacter(variableValue, '\u2028', "|l");
             variableValue = EscapeTeamCitySpecialCharacter(variableValue, '\u2029', "|p");
-
-            variableValue = EscapeTeamCitySpecialCharacter(variableValue, '[');
-            variableValue = EscapeTeamCitySpecialCharacter(variableValue, ']');
+            variableValue = EscapeTeamCitySpecialCharacter(variableValue, '[', "|[");
+            variableValue = EscapeTeamCitySpecialCharacter(variableValue, ']', "|]");
             return variableValue;
         }
 
-        private static string EscapeTeamCitySpecialCharacter(string variableValue, char charToEscape, string replaceWith = "")
+        private static string EscapeTeamCitySpecialCharacter(string variableValue, char charToEscape, string replaceWith)
         {
             string escapeString = new string(charToEscape, 1);
-            if (string.IsNullOrEmpty(replaceWith))
-            {
-                variableValue = variableValue.Replace(escapeString, "|'" + escapeString);
-            }
-            else
-            {
-                variableValue = variableValue.Replace(escapeString, replaceWith);
-            }
+            variableValue = variableValue.Replace(escapeString, replaceWith);
             return variableValue;
         }
 
