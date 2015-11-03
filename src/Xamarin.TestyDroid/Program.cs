@@ -16,7 +16,7 @@ namespace Xamarin.TestyDroid
             if (Debugger.IsAttached)
             {
                 args = new string[15];
-                args[0] = "-e";
+                args[0] = "-q";
                 args[1] = @"C:\Program Files (x86)\Android\android-sdk\tools\emulator.exe";
                 args[2] = "-d";
                 args[3] = @"C:\Program Files (x86)\Android\android-sdk\platform-tools\adb.exe";
@@ -25,12 +25,12 @@ namespace Xamarin.TestyDroid
                 args[6] = "-i";
                 args[7] = "AVD_GalaxyNexus_ToolsForApacheCordova";
                 args[8] = "-n";
-                args[9] = "xamarin.testydroid.testtests";
+                args[9] = "Xamarin.TestyDroid.TestTests";
                 args[10] = "-c";
                 args[11] = "xamarin.testydroid.testtests.TestInstrumentation";
                 args[12] = "-w";
                 args[13] = "120";
-                args[14] = "-v";
+                //args[14] = "-v";
             }
 #endif
 
@@ -43,10 +43,8 @@ namespace Xamarin.TestyDroid
                 var logger = new ConsoleLogger(options.Verbose);
                 Guid emuId = Guid.NewGuid();
 
-                var adbFactory = new AndroidDebugBridgeFactory(options.AdbExePath);
-
+                IAndroidDebugBridgeFactory adbFactory = new AndroidDebugBridgeFactory(options.AdbExePath);
                 IEmulatorFactory emulatorFactory;
-
 
                 if (options.EmulatorType == "sdk")
                 {
@@ -59,9 +57,10 @@ namespace Xamarin.TestyDroid
                 }
 
                 IEmulator droidEmulator = emulatorFactory.GetEmulator();
-                var testResults = StartEmulatorAndRunTests(adbFactory, logger, droidEmulator, options);
-                return ReportResults(testResults);
+                IProgressReporter reporter = GetReporter(options.ReporterType);
 
+                var testResults = StartEmulatorAndRunTests(reporter, adbFactory, logger, droidEmulator, options);
+                return GetReturnCode(testResults);
 
             }
             else
@@ -74,7 +73,18 @@ namespace Xamarin.TestyDroid
 
         }
 
-        private static int ReportResults(TestResults testResults)
+        private static IProgressReporter GetReporter(ReporterType reporterType)
+        {
+            switch (reporterType)
+            {
+                case ReporterType.TeamCity:
+                    return new TeamCityProgressReporter(Console.WriteLine);
+                default:
+                    return new DefaultProgressReporter(Console.WriteLine);
+            }
+        }
+
+        private static int GetReturnCode(TestResults testResults)
         {
             // TODO: Use reporter to report on tests to STDOUT.
 
@@ -93,29 +103,26 @@ namespace Xamarin.TestyDroid
             return 0;
         }
 
-        private static TestResults StartEmulatorAndRunTests(AndroidDebugBridgeFactory adbFactory, ILogger logger, IEmulator droidEmulator, RunAndroidTestsOptions options)
+        private static TestResults StartEmulatorAndRunTests(IProgressReporter progressReporter, IAndroidDebugBridgeFactory adbFactory, ILogger logger, IEmulator droidEmulator, RunAndroidTestsOptions options)
         {
             TimeSpan timeout = TimeSpan.FromSeconds(options.EmulatorStartupWaitTimeInSeconds);
             using (droidEmulator)
             {
+                progressReporter.ReportStatus("Waiting for emulator to boot.");
                 droidEmulator.Start(timeout).Wait();
 
                 var adb = adbFactory.GetAndroidDebugBridge();
-
-                // install tests apk
-                //  var currentDir = Environment.CurrentDirectory;
-                // var apkPath = System.IO.Path.Combine(currentDir, "..\\..\\..\\", TestConfig.PathToAndroidTestsApk);
+               
                 var apkPath = options.ApkPath;
-                var installed = adb.Install(droidEmulator.Device, apkPath, AdbInstallFlags.ReplaceExistingApplication);
+                progressReporter.ReportStatus("Installing tests APK package.");
+                var installed = adb.Install(droidEmulator.Device, apkPath, AdbInstallFlags.ReplaceExistingApplication);                
 
-                // sut
+                progressReporter.ReportTestsStarted(options.ApkPackageName);
                 var testRunner = new AndroidTestRunner(logger, adbFactory, droidEmulator.Device, options.ApkPackageName, options.TestInstrumentationClassPath);
                 var testResults = testRunner.RunTests();
-
-                droidEmulator.Stop();
-
+                progressReporter.ReportTests(testResults);
+                progressReporter.ReportTestsFinished(options.ApkPackageName);
                 return testResults;
-
             }
         }
     }

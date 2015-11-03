@@ -9,8 +9,19 @@ using System.Threading.Tasks;
 
 namespace Xamarin.TestyDroid
 {
+
+    public enum ReporterType
+    {
+        None = 0,
+        TeamCity = 1
+    }
+
     public class RunAndroidTestsOptions
     {
+
+        [Option('r', "reporter-type", Required = false, DefaultValue = ReporterType.None, HelpText = "The type of reporter used to report progress. Specify teamcity if you would like to see progress in TeamCity builds.")]
+        public ReporterType ReporterType { get; set; }     
+
 
         [Option('t', "emulatortype", Required = false, DefaultValue = "sdk", HelpText = "The type of emulator to run the tests on. In future may support Microsoft's Emulator.")]
         public string EmulatorType { get; set; }
@@ -24,13 +35,13 @@ namespace Xamarin.TestyDroid
         /// <summary>
         /// The full path to adb.exe.
         /// </summary>
-        [Option('d', "debugbridgepath", Required = true, HelpText = "The full path to android debug bride (adb.exe)")]
+        [Option('d', "debugbridgepath", Required = true, HelpText = "The full path to android debug bridge (adb.exe)")]
         public string AdbExePath { get; set; }
 
         /// <summary>
         /// The full path to your build APK file for your android tests.
         /// </summary>
-        [Option('f', "apkfile", Required = true, HelpText = "The full path to the .apk file containing your tests that should be run.")]
+        [Option('f', "apkfile", Required = true, HelpText = "The full path to the APK file containing your tests that should be run.")]
         public string ApkPath { get; set; }
 
         /// <summary>
@@ -42,13 +53,13 @@ namespace Xamarin.TestyDroid
         /// <summary>
         /// The name of the AVD image to launch in the emulator.
         /// </summary>
-        [Option('n', "name", Required = true, HelpText = "The package name of your apk package as per it's manifest.")]
+        [Option('n', "name", Required = true, HelpText = "The package name of your APK package as per it's manifest.")]
         public string ApkPackageName { get; set; }
 
         /// <summary>
         /// The class path for your android test instruemntation class.
         /// </summary>
-        [Option('c', "instrumentationclasspath", Required = true, HelpText = "The class path to the instrumentation class inside your tests apk. This should include the namespace (in lower case) and then the class name (case sensitive). E.g xamarin.testydroid.testtests.TestInstrumentation")]
+        [Option('c', "instrumentationclasspath", Required = true, HelpText = "The class path to the instrumentation class inside your tests APK. This should include the namespace (in lower case) and then the class name (case sensitive). E.g xamarin.testydroid.testtests.TestInstrumentation")]
         public string TestInstrumentationClassPath { get; set; }
 
         /// <summary>
@@ -74,6 +85,6 @@ namespace Xamarin.TestyDroid
         }
 
     }
-   
+
 
 }
