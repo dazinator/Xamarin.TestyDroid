@@ -113,5 +113,36 @@ namespace Xamarin.TestyDroid.Tests
 
         }
 
+        [Test]       
+        public async void Cannot_Install_Non_Existing_APK()
+        {
+            var logger = new ConsoleLogger();
+            Guid emuId = Guid.NewGuid();
+
+            // Start an emulator.
+            var adbFactory = new AndroidDebugBridgeFactory(TestConfig.PathToAdbExe);
+            int consolePort = 5554;
+            var emuFactory = new AndroidSdkEmulatorFactory(logger, TestConfig.PathToAndroidEmulatorExe, adbFactory, TestConfig.AvdName, consolePort, true, false, emuId);
+
+            using (IEmulator droidEmulator = emuFactory.GetEmulator())
+            {
+                await droidEmulator.Start(TestConfig.EmulatorStartupTimeout).ContinueWith((t) =>
+                {
+                    // sut
+                    var adb = adbFactory.GetAndroidDebugBridge();
+                    var currentDir = Environment.CurrentDirectory;
+                    var apkPath = System.IO.Path.Combine("..\\..\\..\\", "SOMEOTHER.APK");
+                    var installed = adb.Install(droidEmulator.Device, apkPath, AdbInstallFlags.ReplaceExistingApplication);
+                    Console.WriteLine(installed);
+                    Assert.That(installed, Is.EqualTo(false));
+
+                });
+
+
+            }
+
+
+        }
+
     }
 }

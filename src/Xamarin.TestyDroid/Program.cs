@@ -116,6 +116,12 @@ namespace Xamarin.TestyDroid
                 var apkPath = options.ApkPath;
                 progressReporter.ReportStatus("Installing tests APK package.");
                 var installed = adb.Install(droidEmulator.Device, apkPath, AdbInstallFlags.ReplaceExistingApplication);                
+                if(!installed)
+                {
+                    logger.LogMessage("Could not install APK: " + apkPath);
+                    logger.LogMessage("Environment CurrentDir is: " + Environment.CurrentDirectory);
+                    throw new Exception("Could not install APK: " + apkPath);
+                }
 
                 progressReporter.ReportTestsStarted(options.ApkPackageName);
                 var testRunner = new AndroidTestRunner(logger, adbFactory, droidEmulator.Device, options.ApkPackageName, options.TestInstrumentationClassPath);
