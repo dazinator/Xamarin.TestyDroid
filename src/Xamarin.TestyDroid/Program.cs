@@ -118,9 +118,9 @@ namespace Xamarin.TestyDroid
                 var installed = adb.Install(droidEmulator.Device, apkPath, AdbInstallFlags.ReplaceExistingApplication);                
                 if(!installed)
                 {
-                    logger.LogMessage("Could not install APK: " + apkPath);
-                    logger.LogMessage("Environment CurrentDir is: " + Environment.CurrentDirectory);
-                    throw new Exception("Could not install APK: " + apkPath);
+                    string message = "Could not install APK: " + apkPath + " Environment CurrentDir is: " + Environment.CurrentDirectory;
+                    logger.LogMessage(message);                   
+                    throw new Exception(message);
                 }
 
                 progressReporter.ReportTestsStarted(options.ApkPackageName);
