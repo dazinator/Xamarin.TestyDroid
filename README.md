@@ -1,6 +1,6 @@
 # TestyDroid
 
-TestyDroid is a small command line tool, to handle running your unit tests on an android device during CI builds.
+TestyDroid is a small command line tool, that handles running your unit tests on an android device, and reporting the results back.
 
 1. It will start the android emulator
 2. It will load the desired AVD and detect when it has successfully booted.
@@ -9,8 +9,8 @@ TestyDroid is a small command line tool, to handle running your unit tests on an
 6. It will ensure the emulator is terminated afterwards.
 
 
-Test Results are reported to `STDOUT` via the default reporter.
-However there is the option to use the `TeamCity` reporter, in which case results will be reported using Team City Control messages and so will appear in Team City if invoked during the Team City build.
+Test Results are reported to `STDOUT` when using the default reporter.
+There is the option to specify `TeamCity` as the reporter, in which case test results [will be reported to Team City](https://confluence.jetbrains.com/display/TCD65/Build+Script+Interaction+with+TeamCity) and so will appear in the Team City user interface if invoked during a Team City build.
 
 Open to supporting other build systems via custom Reporters.
 
@@ -24,33 +24,40 @@ Call Xamarin.TestyDroid.exe from the command line, with the following arguments:
 
 ```
 
+  -r, --reporter-type               (Default: None) The type of reporter used
+                                    to report progress. Specify teamcity if you
+                                    would like to see progress in TeamCity
+                                    builds.
+
   -t, --emulatortype                (Default: sdk) The type of emulator to run
-                                    the tests on.
+                                    the tests on. In future may support
+                                    Microsoft's Emulator.
 
   -e, --emulatorexepath             Required. The full path to the emulator
                                     exe.
 
   -d, --debugbridgepath             Required. The full path to android debug
-                                    bride (adb.exe)
+                                    bridge (adb.exe)
 
-  -f, --apkfile                     Required. The full path to the .apk file
+  -f, --apkfile                     Required. The full path to the APK file
                                     containing your tests that should be run.
 
   -i, --imagename                   Required. The name of the avd image to
                                     launch in the emulator.
 
-  -n, --name                        Required. The package name of your apk
-                                    package as per it's manifest..
+  -n, --name                        Required. The package name of your APK
+                                    package as per it's manifest.
 
   -c, --instrumentationclasspath    Required. The class path to the
                                     instrumentation class inside your tests
-                                    apk. This should include the namespace (in
+                                    APK. This should include the namespace (in
                                     lower case) and then the class name (case
                                     sensitive). E.g
                                     xamarin.testydroid.testtests.TestInstrumentation
 
-  -w, --emulatorwaittime            (Default: 120) The maximum number of seconds to
-                                    wait for the emulator to start up before timing out.
+  -w, --emulatorwaittime            (Default: 120) The maximum number of
+                                    seconds to wait for the emulator to start
+                                    up before timing out.
 
   -v, --verbose                     Enable verbose output to the console during
                                     execution.
