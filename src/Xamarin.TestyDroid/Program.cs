@@ -50,7 +50,7 @@ namespace Xamarin.TestyDroid
 
                 if (options.EmulatorType == "sdk")
                 {
-                    emulatorFactory = new AndroidSdkEmulatorFactory(logger, options.EmulatorExePath, adbFactory, options.ImageName, options.PortNumber, true, false, emuId);
+                    emulatorFactory = new AndroidSdkEmulatorFactory(logger, options.EmulatorExePath, adbFactory, options.ImageName, options.PortNumber, true, true, emuId);
                 }
                 else
                 {

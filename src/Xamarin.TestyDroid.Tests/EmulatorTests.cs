@@ -41,6 +41,24 @@ namespace Xamarin.TestyDroid.Tests
 
         }
 
+        [Test]
+        public async void Can_Start_And_Stop_Android_Emulator_With_No_Window()
+        {
+            var logger = new ConsoleLogger();
+            Guid emuId = Guid.NewGuid();
+
+            var adbFactory = new AndroidDebugBridgeFactory(TestConfig.PathToAdbExe);
+            int consolePort = 5554;
+            var emuFactory = new AndroidSdkEmulatorFactory(logger, TestConfig.PathToAndroidEmulatorExe, adbFactory, TestConfig.AvdName, consolePort, true, true, emuId);
+
+            IEmulator droidEmulator = emuFactory.GetEmulator();
+            await droidEmulator.Start(TestConfig.EmulatorStartupTimeout).ContinueWith((t) =>
+            {
+                droidEmulator.Stop();
+            });
+
+        }
+
 
         //var task = new RunAndroidTests();
         //task.AdbExePath = PathToAdbExe;
