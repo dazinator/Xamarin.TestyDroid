@@ -9,7 +9,7 @@
     <owners>Darrell Tunnell</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <language>en-gb</language>
-    <projectUrl>http://dazinator.github.io/TestyDroid/</projectUrl>
+    <projectUrl>https://github.com/dazinator/Xamarin.TestyDroid</projectUrl>
     <copyright>Copyright � Darrell Tunnell 2015</copyright>
     <releaseNotes>
       See here for latest release notes: https://github.com/dazinator/Xamarin.TestyDroid/releases
