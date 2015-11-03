@@ -63,18 +63,22 @@ namespace Xamarin.TestyDroid
 
         public async Task Start(TimeSpan timeout)
         {
-            await Task.Factory.StartNew(StartEmulator)
+            var timeNow = DateTime.UtcNow;
+            var endTime = timeNow.Add(timeout);
+            await Task.Factory.StartNew(() => StartEmulator(endTime))
                 .ContinueWith((startTask) =>
                 {
-                    if(!startTask.IsFaulted)
+                    if(startTask.IsFaulted)
                     {
-                        WaitForBootComplete(timeout);
-                    }                   
+                        throw startTask.Exception;
+                    }
+
+                    WaitForBootComplete(endTime);
                 })
                 .ConfigureAwait(false);
         }
 
-        private void StartEmulator()
+        private void StartEmulator(DateTime expiryTime)
         {
             if (IsRunning)
             {
@@ -95,9 +99,9 @@ namespace Xamarin.TestyDroid
             // poll for attached device.
             var adb = _adbFactory.GetAndroidDebugBridge();
 
-            var timeNow = DateTime.UtcNow;
-            var pollTimeout = new TimeSpan(0, 0, 30);
-            var endTime = timeNow.Add(pollTimeout);
+            //  var timeNow = DateTime.UtcNow;
+            //var pollTimeout = new TimeSpan(0, 0, 30);
+            // endTime = timeNow.Add(pollTimeout);
 
             bool hasAttached = false;
             TimeSpan pollingFrequency = new TimeSpan(0, 0, 2);
@@ -129,9 +133,9 @@ namespace Xamarin.TestyDroid
 
                 if (!hasAttached)
                 {
-                    if (DateTime.UtcNow.Add(pollingFrequency) > endTime)
+                    if (DateTime.UtcNow.Add(pollingFrequency) > expiryTime)
                     {
-                        throw new TimeoutException(string.Format("Emulator started but could not detect the attached adb device after polling within the timeout of: {0} (hh:mm:ss)", pollTimeout));
+                        throw new TimeoutException(string.Format("Emulator started but could not detect the attached adb device before the timeout expired at: {0} (hh:mm:ss)", expiryTime));
                     }
                     Thread.Sleep(pollingFrequency);
                 }
@@ -176,9 +180,9 @@ namespace Xamarin.TestyDroid
                     stream.Flush();
 
                     readCount = stream.Read(results, 0, 100);
-                    resultText = Encoding.ASCII.GetString(results, 0, readCount);                  
+                    resultText = Encoding.ASCII.GetString(results, 0, readCount);
                     _logger.LogMessage(resultText);
-                    if(string.IsNullOrWhiteSpace(resultText) || !resultText.Contains("OK"))
+                    if (string.IsNullOrWhiteSpace(resultText) || !resultText.Contains("OK"))
                     {
                         throw new Exception(string.Format("Unable to kill emulator. Expected OK Response from kill command, but was: {0}", resultText));
                     }
@@ -196,21 +200,18 @@ namespace Xamarin.TestyDroid
 
         }
 
-        public void WaitForBootComplete(TimeSpan bootTimeOut)
+        public void WaitForBootComplete(DateTime expiryTime)
         {
             // block until finished booting.
-            _logger.LogMessage(string.Format("Waiting for device to complete boot up.. {0}", bootTimeOut));
+            _logger.LogMessage(string.Format("Waiting until: {0} for device to complete boot up..", expiryTime));
             if (!IsRunning)
             {
                 throw new InvalidOperationException("Emulator must be started first.");
             }
 
-            var timeNow = DateTime.UtcNow;
-            var endTime = timeNow.Add(bootTimeOut);
-
-            WaitForProperty(endTime, "dev.bootcomplete", "1");
-            WaitForProperty(endTime, "sys.boot_completed", "1");
-            WaitForProperty(endTime, "init.svc.bootanim", "stopped");
+            WaitForProperty(expiryTime, "dev.bootcomplete", "1");
+            WaitForProperty(expiryTime, "sys.boot_completed", "1");
+            WaitForProperty(expiryTime, "init.svc.bootanim", "stopped");
 
 
         }

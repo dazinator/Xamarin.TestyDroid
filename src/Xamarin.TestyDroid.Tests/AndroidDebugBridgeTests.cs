@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System;
 using System.Threading;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Xamarin.TestyDroid.Tests
 {
@@ -139,6 +140,48 @@ namespace Xamarin.TestyDroid.Tests
 
 
             }
+
+
+        }
+
+        [Test]
+        [ExpectedException(typeof(TimeoutException))]
+        public async void Cannot_Proceed_Past_Timeout()
+        {
+            var logger = new ConsoleLogger();
+            Guid emuId = Guid.NewGuid();
+
+            // Start an emulator.
+            var adbFactory = new AndroidDebugBridgeFactory(TestConfig.PathToAdbExe);
+            int consolePort = 5554;
+            var emuFactory = new AndroidSdkEmulatorFactory(logger, TestConfig.PathToAndroidEmulatorExe, adbFactory, TestConfig.AvdName, consolePort, true, false, emuId);
+
+            try
+            {
+                using (IEmulator droidEmulator = emuFactory.GetEmulator())
+                {
+                    TaskContinuationOptions y = new TaskContinuationOptions();
+
+                    await droidEmulator.Start(TimeSpan.FromSeconds(5)).ContinueWith((t) =>
+                    {
+                        if (!t.IsFaulted)
+                        {
+                            Assert.Fail();
+                        }
+
+                        var exception = t.Exception.InnerExceptions[0];
+                        throw exception;
+
+                    });
+
+                }
+            }
+            catch (AggregateException e)
+            {
+                var ex = e.InnerExceptions[0];
+                throw ex;
+            }
+
 
 
         }
