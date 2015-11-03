@@ -37,7 +37,7 @@ namespace Xamarin.TestyDroid.Tests
                     // install tests apk
                     var currentDir = Environment.CurrentDirectory;
                     var apkPath = System.IO.Path.Combine(currentDir, "..\\..\\..\\", TestConfig.PathToAndroidTestsApk);
-                    var installed = adb.Install(droidEmulator.Device, apkPath, AdbInstallFlags.ReplaceExistingApplication);
+                    adb.Install(droidEmulator.Device, apkPath, AdbInstallFlags.ReplaceExistingApplication);
 
                     // sut
                     var testRunner = new AndroidTestRunner(logger, adbFactory, droidEmulator.Device, TestConfig.AndroidTestsPackageName, TestConfig.AndroidTestsInstrumentationClassPath);
@@ -83,7 +83,7 @@ namespace Xamarin.TestyDroid.Tests
                     // install tests apk
                     var currentDir = Environment.CurrentDirectory;
                     var apkPath = System.IO.Path.Combine(currentDir, "..\\..\\..\\", TestConfig.PathToAndroidTestsApk);
-                    var installed = adb.Install(droidEmulator.Device, apkPath, AdbInstallFlags.ReplaceExistingApplication);
+                    adb.Install(droidEmulator.Device, apkPath, AdbInstallFlags.ReplaceExistingApplication);
 
                     // sut
                     IProgressReporter progressReporter = new DefaultProgressReporter(Console.WriteLine);
@@ -128,7 +128,7 @@ namespace Xamarin.TestyDroid.Tests
                     // install tests apk
                     var currentDir = Environment.CurrentDirectory;
                     var apkPath = System.IO.Path.Combine(currentDir, "..\\..\\..\\", TestConfig.PathToAndroidTestsApk);
-                    var installed = adb.Install(droidEmulator.Device, apkPath, AdbInstallFlags.ReplaceExistingApplication);
+                    adb.Install(droidEmulator.Device, apkPath, AdbInstallFlags.ReplaceExistingApplication);
 
                     // sut
                     IProgressReporter progressReporter = new TeamCityProgressReporter(Console.WriteLine);

@@ -87,7 +87,7 @@ namespace Xamarin.TestyDroid
             _adbProcess.Start(args.ToString());
         }
 
-        public bool Install(Device device, string apkFilePath, AdbInstallFlags installFlags = AdbInstallFlags.None)
+        public void Install(Device device, string apkFilePath, AdbInstallFlags installFlags = AdbInstallFlags.None)
         {
             StringBuilder args = new StringBuilder();
             if (device != null)
@@ -115,10 +115,10 @@ namespace Xamarin.TestyDroid
                 }
             }
 
-            if(!Path.IsPathRooted(apkFilePath))
+            if (!Path.IsPathRooted(apkFilePath))
             {
                 var currentDir = Environment.CurrentDirectory;
-                var apkPath = System.IO.Path.Combine(currentDir, apkFilePath);              
+                var apkPath = System.IO.Path.Combine(currentDir, apkFilePath);
             }
 
             args.AppendFormat("\"{0}\"", apkFilePath);
@@ -137,11 +137,11 @@ namespace Xamarin.TestyDroid
             {
                 if (output.ToString().Contains("Success"))
                 {
-                    return true;
+                    return;
                 }
             }
 
-            return false;
+            throw new Exception(string.Format("Unable to install APK file: {0}. Message: {1}", apkFilePath, output.ToString()));            
         }
 
         public static string GetEnumDescription(Enum value)
