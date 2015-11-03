@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -114,6 +115,11 @@ namespace Xamarin.TestyDroid
                 }
             }
 
+            if(!Path.IsPathRooted(apkFilePath))
+            {
+                var currentDir = Environment.CurrentDirectory;
+                var apkPath = System.IO.Path.Combine(currentDir, apkFilePath);              
+            }
 
             args.AppendFormat("\"{0}\"", apkFilePath);
 

@@ -4,17 +4,8 @@ using System;
 using System.Threading;
 
 namespace Xamarin.TestyDroid.Tests
-{
-
-    public class ConsoleLogger : ILogger
-    {
-        public void LogMessage(string message)
-        {
-            Console.WriteLine(message);
-        }
-    }
-
-    [TestFixture]
+{    
+    [TestFixture(Category = "Integration")]
     public class EmulatorTests
     {
 

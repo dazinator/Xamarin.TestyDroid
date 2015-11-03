@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace Xamarin.TestyDroid.Tests
 {
 
-    [TestFixture]
+    [TestFixture(Category = "Integration")]
     public class AndroidTestRunnerTests
     {
         [Test]
