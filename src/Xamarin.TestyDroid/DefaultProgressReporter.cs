@@ -44,6 +44,7 @@ namespace Xamarin.TestyDroid
                     {
                         _Writer("-----------------------------------------------");
                         _Writer(string.Format(" Name: {0}", failedTest.Name));
+                        _Writer(string.Format(" Message: {0}", failedTest.Message));
                         _Writer(string.Format(" Output: {0}", failedTest.Detail));
                         _Writer("-----------------------------------------------");
                     }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -71,9 +72,7 @@ namespace Xamarin.TestyDroid
 
         private void ReportTestFailed(TestResult failedTest)
         {
-            var stringReader = new StringReader(failedTest.Detail);
-            var firstLine = stringReader.ReadLine();           
-            string testFailedMessage = string.Format("##teamcity[testFailed name='{0}' message='{1}' details='{2}']", failedTest.Name, firstLine, failedTest.Detail);
+            string testFailedMessage = string.Format("##teamcity[testFailed name='{0}' message='{1}' details='{2}']", failedTest.Name, failedTest.Message, failedTest.Detail);
             _Writer(testFailedMessage);
         }
 

@@ -9,6 +9,7 @@ namespace Xamarin.TestyDroid
     public class TestResult
     {
         public string Name { get; set; }
+        public string Message { get; set; }
         public string Detail { get; set; }
         public TestResultKind Kind { get; set; }
     }

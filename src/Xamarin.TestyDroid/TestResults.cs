@@ -18,7 +18,7 @@ namespace Xamarin.TestyDroid
             var testResult = new TestResult();
             testResult.Kind = TestResultKind.Failure;
             testResult.Name = resultTestName;
-            testResult.Detail = resultDetailSection;
+            testResult.Message = resultDetailSection;
             this.Tests.Add(testResult);
         }
 

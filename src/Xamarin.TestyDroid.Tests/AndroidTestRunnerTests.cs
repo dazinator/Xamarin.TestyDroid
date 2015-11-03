@@ -27,6 +27,11 @@ namespace Xamarin.TestyDroid.Tests
                 await droidEmulator.Start(TestConfig.EmulatorStartupTimeout).ContinueWith((t) =>
                 {
 
+                    if (t.IsFaulted)
+                    {
+                        throw t.Exception;
+                    }
+
                     var adb = adbFactory.GetAndroidDebugBridge();
 
                     // install tests apk
@@ -68,6 +73,11 @@ namespace Xamarin.TestyDroid.Tests
                 await droidEmulator.Start(TestConfig.EmulatorStartupTimeout).ContinueWith((t) =>
                 {
 
+                    if (t.IsFaulted)
+                    {
+                        throw t.Exception;
+                    }
+
                     var adb = adbFactory.GetAndroidDebugBridge();
 
                     // install tests apk
@@ -84,7 +94,7 @@ namespace Xamarin.TestyDroid.Tests
 
                     progressReporter.ReportTests(testResults);
                     progressReporter.ReportTestsFinished(TestConfig.AndroidTestsPackageName);
-                    return testResults;                    
+                    return testResults;
 
                 });
 
@@ -108,6 +118,11 @@ namespace Xamarin.TestyDroid.Tests
                 await droidEmulator.Start(TestConfig.EmulatorStartupTimeout).ContinueWith((t) =>
                 {
 
+                    if (t.IsFaulted)
+                    {
+                        throw t.Exception;
+                    }
+
                     var adb = adbFactory.GetAndroidDebugBridge();
 
                     // install tests apk
@@ -125,6 +140,9 @@ namespace Xamarin.TestyDroid.Tests
                     progressReporter.ReportTests(testResults);
                     progressReporter.ReportTestsFinished(TestConfig.AndroidTestsPackageName);
                     return testResults;
+
+
+
 
                 });
 
