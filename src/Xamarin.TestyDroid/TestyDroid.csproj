@@ -80,6 +80,7 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RunAndroidTests.cs" />
+    <Compile Include="TeamCityVariableStringExtensions.cs" />
     <Compile Include="TeamCityTestReporter.cs" />
     <Compile Include="TestOutputParser.cs" />
     <Compile Include="TestResult.cs" />

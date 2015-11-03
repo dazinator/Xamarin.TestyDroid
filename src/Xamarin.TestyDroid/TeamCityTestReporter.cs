@@ -20,7 +20,7 @@ namespace Xamarin.TestyDroid
 
         public void ReportStatus(string message)
         {
-            string teamCityControlMessage = string.Format("##teamcity[progressMessage '{0}']", message);
+            string teamCityControlMessage = string.Format("##teamcity[progressMessage '{0}']", message.EscapeTeamCitySpecialCharacters());
             _Writer(teamCityControlMessage);
         }
 
@@ -60,37 +60,37 @@ namespace Xamarin.TestyDroid
 
         private void ReportTestIgnored(TestResult test)
         {
-            string testIgnoredMessage = string.Format("##teamcity[testIgnored name='{0}' message='{1}']", test.Name, "Ignored.");
+            string testIgnoredMessage = string.Format("##teamcity[testIgnored name='{0}' message='{1}']", test.Name.EscapeTeamCitySpecialCharacters(), "Ignored.");
             _Writer(testIgnoredMessage);
         }
 
         private void ReportTestFinished(TestResult failedTest)
         {
-            string testFinishedMessage = string.Format("##teamcity[testFinished name='{0}']", failedTest.Name);
+            string testFinishedMessage = string.Format("##teamcity[testFinished name='{0}']", failedTest.Name.EscapeTeamCitySpecialCharacters());
             _Writer(testFinishedMessage);
         }
 
         private void ReportTestFailed(TestResult failedTest)
         {
-            string testFailedMessage = string.Format("##teamcity[testFailed name='{0}' message='{1}' details='{2}']", failedTest.Name, failedTest.Message, failedTest.Detail);
+            string testFailedMessage = string.Format("##teamcity[testFailed name='{0}' message='{1}' details='{2}']", failedTest.Name.EscapeTeamCitySpecialCharacters(), failedTest.Message.EscapeTeamCitySpecialCharacters(), failedTest.Detail.EscapeTeamCitySpecialCharacters());
             _Writer(testFailedMessage);
         }
 
         private void ReportTestStarted(TestResult failedTest)
         {
-            string testStartedMessage = string.Format("##teamcity[testStarted name='{0}']", failedTest.Name);
+            string testStartedMessage = string.Format("##teamcity[testStarted name='{0}']", failedTest.Name.EscapeTeamCitySpecialCharacters());
             _Writer(testStartedMessage);
         }
 
         public void ReportTestsFinished(string testSuiteName)
         {
-            string teamCityControlMessage = string.Format("##teamcity[testSuiteFinished name='{0}']", testSuiteName);
+            string teamCityControlMessage = string.Format("##teamcity[testSuiteFinished name='{0}']", testSuiteName.EscapeTeamCitySpecialCharacters());
             _Writer(teamCityControlMessage);
         }
 
         public void ReportTestsStarted(string testSuiteName)
         {
-            string teamCityControlMessage = string.Format("##teamcity[testSuiteStarted name='{0}']", testSuiteName);
+            string teamCityControlMessage = string.Format("##teamcity[testSuiteStarted name='{0}']", testSuiteName.EscapeTeamCitySpecialCharacters());
             _Writer(teamCityControlMessage);
         }
     }
