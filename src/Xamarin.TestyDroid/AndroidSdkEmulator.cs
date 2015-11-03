@@ -176,17 +176,13 @@ namespace Xamarin.TestyDroid
                     stream.Flush();
 
                     readCount = stream.Read(results, 0, 100);
-                    resultText = Encoding.ASCII.GetString(results, 0, readCount);
-                    _logger.LogMessage("Output from kill command to follow");
+                    resultText = Encoding.ASCII.GetString(results, 0, readCount);                  
                     _logger.LogMessage(resultText);
-                    if (resultText == "OK")
+                    if(string.IsNullOrWhiteSpace(resultText) || !resultText.Contains("OK"))
                     {
-                        _logger.LogMessage("Device has been killed.");
+                        throw new Exception(string.Format("Unable to kill emulator. Expected OK Response from kill command, but was: {0}", resultText));
                     }
-                    else
-                    {
-                        throw new Exception(string.Format("Unable to kill emulator. Response from kill command was: {0}", resultText));
-                    }
+                    _logger.LogMessage("Emulator killed.");
                     TimeSpan timeout = new TimeSpan(0, 0, 30);
                     stream.Close((int)timeout.TotalMilliseconds);
                 }
