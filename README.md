@@ -14,6 +14,9 @@ However there is the option to use the `TeamCity` reporter, in which case result
 
 Open to supporting other build systems via custom Reporters.
 
+# Getting Started
+
+See here: https://github.com/dazinator/Xamarin.TestyDroid/wiki/Getting-Started
 
 # Usage
 
