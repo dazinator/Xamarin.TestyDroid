@@ -86,6 +86,7 @@ namespace Xamarin.TestyDroid
                     break;
 
                 case "passed":
+                   // TestResults.AppendTest(resultTestName, resultDetailSection);
                     AppendTestsFromCount(TestResultKind.Passed, resultDetailSection);
                     break;
 
