@@ -21,6 +21,11 @@ namespace Xamarin.TestyDroid
         private IProcess _emulatorProcess;
         private AndroidDevice _androidDevice;
 
+
+        private StringBuilder _emulatorExeStandardOut = new StringBuilder();
+        private StringBuilder _emulatorExeStandardErrorOut = new StringBuilder();
+
+
         public AndroidSdkEmulator(ILogger logger, IProcess androidEmulatorProcess, IAndroidDebugBridgeFactory adbFactory, Guid id, int? consolePort)
         {
             _logger = logger;
@@ -68,7 +73,7 @@ namespace Xamarin.TestyDroid
             await Task.Factory.StartNew(() => StartEmulator(endTime))
                 .ContinueWith((startTask) =>
                 {
-                    if(startTask.IsFaulted)
+                    if (startTask.IsFaulted)
                     {
                         throw startTask.Exception;
                     }
@@ -88,20 +93,14 @@ namespace Xamarin.TestyDroid
             _logger.LogMessage(string.Format("Starting emulator: {0} {1}", _emulatorProcess.FileName, _emulatorProcess.Arguments));
             _emulatorProcess.Start();
 
-            StringBuilder stdOut = new StringBuilder();
-            StringBuilder errorOut = new StringBuilder();
-            _emulatorProcess.ListenToStandardOut((s) => stdOut.AppendLine(s));
-            _emulatorProcess.ListenToStandardError((s) => errorOut.AppendLine(s));
+            _emulatorProcess.ListenToStandardOut((s) => _emulatorExeStandardOut.AppendLine(s));
+            _emulatorProcess.ListenToStandardError((s) => _emulatorExeStandardErrorOut.AppendLine(s));
 
             // Now get the devices..
             _logger.LogMessage(string.Format("Finding attached Adb Device: {0}", _id));
 
             // poll for attached device.
-            var adb = _adbFactory.GetAndroidDebugBridge();
-
-            //  var timeNow = DateTime.UtcNow;
-            //var pollTimeout = new TimeSpan(0, 0, 30);
-            // endTime = timeNow.Add(pollTimeout);
+            var adb = _adbFactory.GetAndroidDebugBridge();          
 
             bool hasAttached = false;
             TimeSpan pollingFrequency = new TimeSpan(0, 0, 2);
@@ -135,16 +134,40 @@ namespace Xamarin.TestyDroid
                 {
                     if (DateTime.UtcNow.Add(pollingFrequency) > expiryTime)
                     {
-                        throw new TimeoutException(string.Format("Emulator started but could not detect the attached adb device before the timeout expired at: {0} (hh:mm:ss)", expiryTime));
+                        OnEmulatorStartupFailed(expiryTime);
                     }
                     Thread.Sleep(pollingFrequency);
                 }
             }
 
+            EnsureDeviceAttached();
+
+        }
+
+        private void EnsureDeviceAttached()
+        {
             if (this.Device == null)
             {
-                throw new InvalidOperationException("Could not find attached device after emulator started..");
+                // dump standard error out.
+                _logger.LogMessage(string.Format("Could not find device."));
+                WriteEmulatorExeOutputToLog();
+                throw new InvalidOperationException("Could not find the attached device..");
             }
+        }
+
+        private void WriteEmulatorExeOutputToLog()
+        {
+            _logger.LogMessage(string.Format("Standard output from {0} was: ", _emulatorProcess.FileName));
+            _logger.LogMessage(_emulatorExeStandardOut.ToString());
+            _logger.LogMessage(string.Format("Standard error output from {0} was: ", _emulatorProcess.FileName));
+            _logger.LogMessage(_emulatorExeStandardErrorOut.ToString());
+        }
+
+        private void OnEmulatorStartupFailed(DateTime expiryTime)
+        {
+            _logger.LogMessage(string.Format("Timeout expired."));
+            WriteEmulatorExeOutputToLog();
+            throw new TimeoutException(string.Format("The timeout was exceeded when starting the emulator. Timeout expired at: {0} (hh:mm:ss)", expiryTime));
         }
 
         public void Stop()
