@@ -65,6 +65,7 @@
     <Compile Include="AndroidTestRunner.cs" />
     <Compile Include="BaseFactory.cs" />
     <Compile Include="ConsoleLogger.cs" />
+    <Compile Include="EmulatorAbortDetector.cs" />
     <Compile Include="IAndroidDebugBridge.cs" />
     <Compile Include="IAndroidDebugBridgeFactory.cs" />
     <Compile Include="IEmulator.cs" />

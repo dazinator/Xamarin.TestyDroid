@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 
 namespace Xamarin.TestyDroid
 {
+
     public class AndroidSdkEmulator : IEmulator
     {
 
@@ -20,11 +21,11 @@ namespace Xamarin.TestyDroid
         private IAndroidDebugBridgeFactory _adbFactory;
         private IProcess _emulatorProcess;
         private AndroidDevice _androidDevice;
-
+        private bool _errorOnStartDetected;
 
         private StringBuilder _emulatorExeStandardOut = new StringBuilder();
         private StringBuilder _emulatorExeStandardErrorOut = new StringBuilder();
-
+        private EmulatorAbortDetector _abortDetector = new EmulatorAbortDetector();
 
         public AndroidSdkEmulator(ILogger logger, IProcess androidEmulatorProcess, IAndroidDebugBridgeFactory adbFactory, Guid id, int? consolePort)
         {
@@ -93,14 +94,18 @@ namespace Xamarin.TestyDroid
             _logger.LogMessage(string.Format("Starting emulator: {0} {1}", _emulatorProcess.FileName, _emulatorProcess.Arguments));
             _emulatorProcess.Start();
 
-            _emulatorProcess.ListenToStandardOut((s) => _emulatorExeStandardOut.AppendLine(s));
+            _emulatorProcess.ListenToStandardOut((s) =>
+            {
+                _emulatorExeStandardOut.AppendLine(s);
+            });
+
             _emulatorProcess.ListenToStandardError((s) => _emulatorExeStandardErrorOut.AppendLine(s));
 
             // Now get the devices..
             _logger.LogMessage(string.Format("Finding attached Adb Device: {0}", _id));
 
             // poll for attached device.
-            var adb = _adbFactory.GetAndroidDebugBridge();          
+            var adb = _adbFactory.GetAndroidDebugBridge();
 
             bool hasAttached = false;
             TimeSpan pollingFrequency = new TimeSpan(0, 0, 2);
@@ -108,6 +113,12 @@ namespace Xamarin.TestyDroid
 
             while (!hasAttached)
             {
+                if (_abortDetector.HasAborted(_emulatorExeStandardErrorOut))
+                {
+                    WriteEmulatorExeOutputToLog();
+                    throw new Exception("Emulator could not start.");
+                }
+
                 attempts = attempts + 1;
                 var devices = adb.GetDevices();
                 var matchingPortDevices = devices.Where(d => d.Port == _consolePort);
