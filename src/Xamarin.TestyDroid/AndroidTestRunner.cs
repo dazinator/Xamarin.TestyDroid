@@ -27,14 +27,14 @@ namespace Xamarin.TestyDroid
         public TestResults RunTests()
         {
             var adb = _adbFactory.GetAndroidDebugBridge();
-            var testOutputParser = new TestOutputParser();
+            var testOutputParser = new TestOutputParser(_adbFactory, _androidDevice);
 
             var testOutput = adb.StartInstrument(_androidDevice, _packageName, _runnerClass, (outPut) =>
             {
                 testOutputParser.Append(outPut);
             });
 
-            var results = testOutputParser.TestResults;
+            var results = testOutputParser.GetResults();
             _logger.LogMessage(testOutput);
 
             return results;

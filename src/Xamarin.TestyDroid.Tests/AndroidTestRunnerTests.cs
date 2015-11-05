@@ -44,11 +44,12 @@ namespace Xamarin.TestyDroid.Tests
                     var testResults = testRunner.RunTests();
 
                     Assert.That(testResults, Is.Not.Null);
-                    var failedTests = testResults.Tests.Where(a => a.Kind == TestResultKind.Failure);
+                    var tests = testResults.GetTests().ToList();
+                    var failedTests = tests.Where(a => a.Kind == TestResultKind.Failure);
 
                     foreach (var a in failedTests)
                     {
-                        logger.LogMessage(string.Format("{0} - ", a.Name, a.Detail));
+                        logger.LogMessage(string.Format("{0} - ", a.Name, a.StackTrace));
                     }
 
                 });

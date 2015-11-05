@@ -89,14 +89,13 @@ namespace Xamarin.TestyDroid
         private static int GetReturnCode(TestResults testResults)
         {
             // TODO: Use reporter to report on tests to STDOUT.
-
-
             if (testResults == null)
             {
                 return -1; //error?
             }
 
-            if (testResults.Tests != null && testResults.Tests.Any(a => a.Kind == TestResultKind.Failure))
+            var tests = testResults.GetTests().ToList();
+            if (tests.Any(a => a.Kind == TestResultKind.Failure))
             {
                 return -2; // there are failed unit tests.
             }

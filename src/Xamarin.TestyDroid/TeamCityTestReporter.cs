@@ -25,18 +25,13 @@ namespace Xamarin.TestyDroid
         }
 
         public void ReportTests(TestResults results)
-        {           
-            if (results != null && results.Tests != null)
+        {
+            if (results != null)
             {
+                var tests = results.GetTests().ToList();
                 // unfortunately we cant capture names or details of "non failed" tests at present, so need to generate names for all non failed tests!                
-                foreach (var test in results.Tests)
+                foreach (var test in tests)
                 {
-                    if (string.IsNullOrWhiteSpace(test.Name))
-                    {
-                        test.Name = "Test: " + testCounter;
-                    }
-                    testCounter = testCounter + 1;
-
                     if (test.Kind == TestResultKind.Skipped)
                     {
                         ReportTestIgnored(test);
@@ -50,35 +45,47 @@ namespace Xamarin.TestyDroid
                         ReportTestFailed(test);
                     }
 
-                    if (test.Kind != TestResultKind.Inconclusive)
-                    {
-                        ReportTestFinished(test);
-                    }
+                    ReportTestFinished(test);
+                    testCounter = testCounter + 1;
                 }
             }
         }
 
         private void ReportTestIgnored(TestResult test)
         {
-            string testIgnoredMessage = string.Format("##teamcity[testIgnored name='{0}' message='{1}']", test.Name.EscapeTeamCitySpecialCharacters(), "Ignored.");
+            var name = EnsureTestName(test);
+            string testIgnoredMessage = string.Format("##teamcity[testIgnored name='{0}' message='{1}']", name, "Ignored.");
             _Writer(testIgnoredMessage);
+        }
+
+        private string EnsureTestName(TestResult test)
+        {
+            string name = test.Name;
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                name = "Test" + testCounter;
+            }
+            return name.EscapeTeamCitySpecialCharacters();
         }
 
         private void ReportTestFinished(TestResult failedTest)
         {
-            string testFinishedMessage = string.Format("##teamcity[testFinished name='{0}']", failedTest.Name.EscapeTeamCitySpecialCharacters());
+            var name = EnsureTestName(failedTest);
+            string testFinishedMessage = string.Format("##teamcity[testFinished name='{0}']", name);
             _Writer(testFinishedMessage);
         }
 
         private void ReportTestFailed(TestResult failedTest)
         {
-            string testFailedMessage = string.Format("##teamcity[testFailed name='{0}' message='{1}' details='{2}']", failedTest.Name.EscapeTeamCitySpecialCharacters(), failedTest.Message.EscapeTeamCitySpecialCharacters(), failedTest.Detail.EscapeTeamCitySpecialCharacters());
+            var name = EnsureTestName(failedTest);
+            string testFailedMessage = string.Format("##teamcity[testFailed name='{0}' message='{1}' details='{2}']", name, failedTest.Message.EscapeTeamCitySpecialCharacters(), failedTest.StackTrace.EscapeTeamCitySpecialCharacters());
             _Writer(testFailedMessage);
         }
 
         private void ReportTestStarted(TestResult failedTest)
         {
-            string testStartedMessage = string.Format("##teamcity[testStarted name='{0}']", failedTest.Name.EscapeTeamCitySpecialCharacters());
+            var name = EnsureTestName(failedTest);
+            string testStartedMessage = string.Format("##teamcity[testStarted name='{0}']", name);
             _Writer(testStartedMessage);
         }
 

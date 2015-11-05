@@ -22,13 +22,13 @@ namespace Xamarin.TestyDroid
 
         public void ReportTests(TestResults results)
         {
-            if (results != null && results.Tests != null)
+            if (results != null)
             {
-
-                var passedTests = results.Tests.Where(t => t.Kind == TestResultKind.Passed).ToList();
-                var skippedTests = results.Tests.Where(t => t.Kind == TestResultKind.Skipped).ToList();
-                var inconclusiveTests = results.Tests.Where(t => t.Kind == TestResultKind.Inconclusive).ToList();
-                var failedTests = results.Tests.Where(t => t.Kind == TestResultKind.Failure).ToList();
+                var tests = results.GetTests().ToList();
+                var passedTests = tests.Where(t => t.Kind == TestResultKind.Passed).ToList();
+                var skippedTests = tests.Where(t => t.Kind == TestResultKind.Skipped).ToList();
+                var inconclusiveTests = tests.Where(t => t.Kind == TestResultKind.Inconclusive).ToList();
+                var failedTests = tests.Where(t => t.Kind == TestResultKind.Failure).ToList();
 
                 _Writer(string.Format("Tests Summary", passedTests.Count));
                 _Writer("---------------------");
@@ -45,7 +45,7 @@ namespace Xamarin.TestyDroid
                         _Writer("-----------------------------------------------");
                         _Writer(string.Format(" Name: {0}", failedTest.Name));
                         _Writer(string.Format(" Message: {0}", failedTest.Message));
-                        _Writer(string.Format(" Output: {0}", failedTest.Detail));
+                        _Writer(string.Format(" Output: {0}", failedTest.StackTrace));
                         _Writer("-----------------------------------------------");
                     }
                 }               

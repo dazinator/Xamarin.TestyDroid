@@ -10,6 +10,7 @@ using NUnit.Framework.Api;
 using NUnit.Framework.Internal;
 using Android.Util;
 using System.Xml;
+using System.IO;
 
 namespace Xamarin.TestyDroid.TestTests
 {
@@ -37,8 +38,10 @@ namespace Xamarin.TestyDroid.TestTests
             try
             {
                 IDictionary<string, NUnit.Framework.Internal.TestResult> testResults = EnsureTestResults();
-                AddResultsToBundle(testResults, results);
-                // results.PutBoolean("##TestyDroidResultFormat", true);
+                var report = CreateReport(testResults);
+                var reportFile = SaveReportToFile(report);
+                results.PutString("##TestyDroidTestsReport", reportFile);
+
             }
             catch (Exception e)
             {
@@ -50,7 +53,7 @@ namespace Xamarin.TestyDroid.TestTests
             base.Finish(resultCode, results);
         }
 
-        private void AddResultsToBundle(IDictionary<string, TestResult> testResults, Bundle results)
+        private string CreateReport(IDictionary<string, TestResult> testResults)
         {
 
             var testResultsDoc = new XmlDocument();
@@ -86,30 +89,34 @@ namespace Xamarin.TestyDroid.TestTests
                     testElement.Attributes.Append(labelAtt);
 
                     testElement.InnerText = testResult.StackTrace;
-
-                    //  testResultsElement.AppendChild(new XmlElement())
-                    // string testResultBundleKey = string.Format("##Test:{0}##", testResult.FullName);
-                    //  string testResultBundleValue = string.Format("<TestResult Name='{0}' Status:{1} Duration:{1}##Message:{2}##StackTrace:{3}##Label:{4}",testResult.FullName, testResult.ResultState.Status,  testResult.Duration testResult.Message, testResult.StackTrace);
-
                 }
             }
 
             var reportContents = testResultsDoc.OuterXml;
-            results.PutString("##TestyDroidTestsReport", reportContents);
+            return reportContents;
 
-            //// now output desired format in bundle.
-            //foreach (var testResult in testResults.Values)
-            //{
-            //    if (!testResult.HasChildren)
-            //    {
-            //        string testResultBundleKey = string.Format("##UnitTest##{0}##{1}##{2}##", testResult.FullName, testResult.ResultState.Status,  testResult.Duration);
+        }
 
+        private string SaveReportToFile(string reportContents)
+        {
+            // save the results to tests file
+            //var path = global::Android.OS.Environment.ExternalStorageDirectory;
+            string path = System.Environment.GetFolderPath(System.Environment.SpecialFolder.Personal);
+            string filename = Path.Combine(path, this.GetType().FullName + ".xml");
 
-            //        string testResultBundleValue = string.Format("##Message##{0}StackTrace##{1}##", testResult.Message, testResult.StackTrace);
-            //        results.PutString(testResultBundleKey, testResultBundleValue);
-            //    }
-            //}
+            if (File.Exists(filename))
+            {
+                File.Delete(filename);
+            }          
 
+            using (var streamWriter = new StreamWriter(filename))
+            {
+                streamWriter.Write(reportContents);
+                streamWriter.Flush();
+                streamWriter.Close();
+            }
+
+            return filename;
         }
 
         private IDictionary<string, TestResult> EnsureTestResults()

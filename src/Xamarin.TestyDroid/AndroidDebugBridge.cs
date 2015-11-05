@@ -190,5 +190,26 @@ namespace Xamarin.TestyDroid
             return output.ToString();
 
         }
+
+        public string ReadFileContents(Device device, string path)
+        {
+            StringBuilder args = new StringBuilder();
+            if (device != null)
+            {
+                args.AppendFormat("-s {0} ", device.FullName());
+            }
+            args.AppendFormat("shell cat {0}", path);                
+
+            StringBuilder output = new StringBuilder();
+            _adbProcess.Start(args.ToString());
+
+            _adbProcess.ListenToStandardOut((outMessage) =>
+            {
+                output.AppendLine(outMessage);               
+            });
+
+            _adbProcess.WaitForExit();
+            return output.ToString();
+        }
     }
 }
