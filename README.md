@@ -2,26 +2,27 @@
 
 TestyDroid makes automating your android tests (Xamarin Tests App) on an android device really easy.
 
-It can also output the test report in TeamCity format, so you see all of the tests in TeamCity as part of your build.
+# Getting Started
+
+See here: https://github.com/dazinator/Xamarin.TestyDroid/wiki/Getting-Started
+
+# What does it do?
 
 TestyDroid handles all of the following for you:
 
-1. Starting the android emulator.
+1. Starting an android emulator.
 2. Loading the desired AVD and detecting when it has successfully booted.
-4. Installing your APK package containing your tests
-5. Launching your tests using the Instrumentation class (see getting started) and collating a report.
+4. Installing the APK package containing your tests
+5. Launching your tests and collating the report.
 6. Ensuring the emulator is terminated afterwards.
-
 
 Test Results are written to `STDOUT` (console out) by default, however there is the option to specify `TeamCity` as the reporter, in which case test results [will be reported in Team City format](https://confluence.jetbrains.com/display/TCD65/Build+Script+Interaction+with+TeamCity) and so will appear in the Team City user interface if invoked during a Team City build.
 
 Open to supporting other build systems via custom Reporters.
 
-# Getting Started
-
-See here: https://github.com/dazinator/Xamarin.TestyDroid/wiki/Getting-Started
-
 # Usage
+
+After adding the [Xamarin.TestyDroid](https://www.nuget.org/packages/Xamarin.TestyDroid/) NuGet package to your `Android Tests App` project, you can find `TestyDroid.exe` in the NuGet packages `tools` directory.
 
 Call Xamarin.TestyDroid.exe from the command line, with the following arguments:
 
