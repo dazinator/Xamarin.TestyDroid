@@ -3,6 +3,7 @@ using CommandLine.Text;
 using Microsoft.Build.Framework;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -16,11 +17,23 @@ namespace TestyDroid
         TeamCity = 1
     }
 
+    public enum SingleInstanceMode
+    {
+        [Description("Will check for an emulator that is already running on the same port and will abort the program if one is found.")]
+        Abort = 0,
+        [Description("Will kill any existing emulator that is running on the same port, resulting in a new one being launched.")]
+        KillExisting = 1,
+        [Description("Will re-use the existing emulator that is already running on the same port, else will launch a new one. If it has re-used an existing one, it will leave it open afterwards.")]
+        ReuseExisting = 2,
+        [Description("Will re-use the existing emulator that is already running on the same port, else will launch a new one. Will kill the emulator afterwards.")]
+        ReuseExistingThenKill = 3
+    }
+
     public class RunAndroidTestsOptions
     {
 
         [Option('r', "reporter-type", Required = false, DefaultValue = ReporterType.None, HelpText = "The type of reporter used to report progress. Specify teamcity if you would like to see progress in TeamCity builds.")]
-        public ReporterType ReporterType { get; set; }     
+        public ReporterType ReporterType { get; set; }
 
 
         [Option('t', "emulatortype", Required = false, DefaultValue = "sdk", HelpText = "The type of emulator to run the tests on. In future may support Microsoft's Emulator.")]
@@ -73,6 +86,9 @@ namespace TestyDroid
 
         [Option('p', "portnumber", Required = false, DefaultValue = 5554, HelpText = "The port number that the android console will be listening on, on localhost.")]
         public int PortNumber { get; set; }
+        
+        [Option('s', "single-instance-mode", Required = false, DefaultValue = SingleInstanceMode.Abort, HelpText = "Controls what happens if there is an existing device detected already running on the same console port.")]
+        public SingleInstanceMode SingleInstanceMode { get; set; }
 
         [HelpOption]
         public string GetUsage()

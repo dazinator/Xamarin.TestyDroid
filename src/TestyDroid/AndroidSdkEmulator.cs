@@ -27,6 +27,9 @@ namespace TestyDroid
         private StringBuilder _emulatorExeStandardErrorOut = new StringBuilder();
         private EmulatorAbortDetector _abortDetector = new EmulatorAbortDetector();
 
+
+        private bool _LeaveDeviceOpen;
+
         public AndroidSdkEmulator(ILogger logger, IProcess androidEmulatorProcess, IAndroidDebugBridgeFactory adbFactory, Guid id, int? consolePort)
         {
             _logger = logger;
@@ -34,6 +37,16 @@ namespace TestyDroid
             _adbFactory = adbFactory;
             _id = id;
             _consolePort = consolePort;
+        }
+
+        public AndroidSdkEmulator(ILogger logger, IProcess androidEmulatorProcess, IAndroidDebugBridgeFactory adbFactory, AndroidDevice existingDevice, bool leaveDeviceOpen)
+        {
+            _logger = logger;
+            _emulatorProcess = androidEmulatorProcess;
+            _adbFactory = adbFactory;
+            _consolePort = existingDevice.Port;
+            _androidDevice = existingDevice;
+            _LeaveDeviceOpen = leaveDeviceOpen;
         }
 
         public bool IsRunning
@@ -71,6 +84,16 @@ namespace TestyDroid
         {
             var timeNow = DateTime.UtcNow;
             var endTime = timeNow.Add(timeout);
+
+            // emulator process allready running, just ensure device has finished booting.
+            if (IsRunning)
+            {
+                await Task.Factory.StartNew(() => WaitForBootComplete(endTime))
+                .ConfigureAwait(false);
+                return;
+            }
+
+            // otherwise start a new instance, and wait for boot complete.
             await Task.Factory.StartNew(() => StartEmulator(endTime))
                 .ContinueWith((startTask) =>
                 {
@@ -78,7 +101,6 @@ namespace TestyDroid
                     {
                         throw startTask.Exception;
                     }
-
                     WaitForBootComplete(endTime);
                 })
                 .ConfigureAwait(false);
@@ -168,10 +190,26 @@ namespace TestyDroid
 
         private void WriteEmulatorExeOutputToLog()
         {
-            _logger.LogMessage(string.Format("Standard output from {0} was: ", _emulatorProcess.FileName));
-            _logger.LogMessage(_emulatorExeStandardOut.ToString());
-            _logger.LogMessage(string.Format("Standard error output from {0} was: ", _emulatorProcess.FileName));
-            _logger.LogMessage(_emulatorExeStandardErrorOut.ToString());
+
+            if (_emulatorExeStandardOut != null)
+            {
+                _logger.LogMessage(string.Format("Standard output from {0} was: ", _emulatorProcess.FileName));
+                _logger.LogMessage(_emulatorExeStandardOut.ToString());
+            }
+            else
+            {
+                _logger.LogMessage(string.Format("Standard output for emulator.exe process not available."));
+            }
+
+            if (_emulatorExeStandardErrorOut != null)
+            {
+                _logger.LogMessage(string.Format("Standard error output from {0} was: ", _emulatorProcess.FileName));
+                _logger.LogMessage(_emulatorExeStandardErrorOut.ToString());
+            }
+            else
+            {
+                _logger.LogMessage(string.Format("Standard error output for emulator.exe process not available."));
+            }
         }
 
         private void OnEmulatorStartupFailed(DateTime expiryTime)
@@ -185,7 +223,14 @@ namespace TestyDroid
         {
             if (IsRunning)
             {
-                this.KillDevice();
+                if (!_LeaveDeviceOpen)
+                {
+                    this.KillDevice();
+                }
+                else
+                {
+                    _logger.LogMessage("Device will be left open.");
+                }
                 _emulatorProcess.Stop();
                 _emulatorProcess = null;
             }
@@ -196,42 +241,21 @@ namespace TestyDroid
             var device = this._androidDevice;
             if (device != null)
             {
-                _logger.LogMessage(string.Format("Killing device: {0}", device.FullName()));
-                TcpClient client = new TcpClient("localhost", device.Port);
-                using (var stream = client.GetStream())
+                try
                 {
-
-                    byte[] results = new byte[100];
-                    var readCount = stream.Read(results, 0, 100);
-                    var resultText = Encoding.ASCII.GetString(results, 0, readCount);
-
-                    _logger.LogMessage("Connected to device console.");
-                    _logger.LogMessage(resultText);
-
-                    _logger.LogMessage("Sending kill command.");
-                    var command = Encoding.ASCII.GetBytes("kill" + Environment.NewLine);
-                    stream.Write(command, 0, command.Length);
-                    stream.Flush();
-
-                    readCount = stream.Read(results, 0, 100);
-                    resultText = Encoding.ASCII.GetString(results, 0, readCount);
-                    _logger.LogMessage(resultText);
-                    if (string.IsNullOrWhiteSpace(resultText) || !resultText.Contains("OK"))
-                    {
-                        throw new Exception(string.Format("Unable to kill emulator. Expected OK Response from kill command, but was: {0}", resultText));
-                    }
-                    _logger.LogMessage("Emulator killed.");
-                    TimeSpan timeout = new TimeSpan(0, 0, 30);
-                    stream.Close((int)timeout.TotalMilliseconds);
+                    device.Kill(_logger);
                 }
-                client.Close();
+                catch (SocketException se)
+                {
+                    _logger.LogMessage("Socket exception caught when attempting to kill the device. This usually means the device has allready closed.");
+                    throw;
+                }
             }
             else
             {
                 _logger.LogMessage("Cannot kill as no device attached.");
                 throw new InvalidOperationException("Unable to kill device as device not yet attached.");
             }
-
         }
 
         public void WaitForBootComplete(DateTime expiryTime)

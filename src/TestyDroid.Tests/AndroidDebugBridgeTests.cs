@@ -186,5 +186,49 @@ namespace TestyDroid.Tests
 
         }
 
+        
+        [Test]
+        [TestCase(SingleInstanceMode.Abort)]
+        [TestCase(SingleInstanceMode.KillExisting)]
+        [TestCase(SingleInstanceMode.ReuseExisting)]
+        [TestCase(SingleInstanceMode.ReuseExistingThenKill)]
+        public async void Can_Detect_Existing_Device(SingleInstanceMode singleInstanceMode)
+        {
+            var logger = new ConsoleLogger();
+            Guid emuId = Guid.NewGuid();
+
+            // Start an emulator.
+            var adbFactory = new AndroidDebugBridgeFactory(TestConfig.PathToAdbExe);
+            int consolePort = 5554;
+            var emuFactory = new AndroidSdkEmulatorFactory(logger, TestConfig.PathToAndroidEmulatorExe, adbFactory, TestConfig.AvdName, consolePort, true, false, emuId);
+
+            using (IEmulator droidEmulator = emuFactory.GetEmulator())
+            {
+                await droidEmulator.Start(TestConfig.EmulatorStartupTimeout).ContinueWith((t) =>
+                {
+                    // sut
+                    var adb = adbFactory.GetAndroidDebugBridge();
+                    var devices = adb.GetDevices();
+
+                    Assert.That(devices, Is.Not.Null);
+                    Assert.That(devices.Length, Is.GreaterThanOrEqualTo(1));
+
+                    var deviceFound = devices.Where(a => a.Port == consolePort).FirstOrDefault();
+                    Assert.That(deviceFound, Is.Not.Null);
+
+                    foreach (var item in devices)
+                    {
+                        Console.WriteLine("Device Name: {0}, Status: {1}", item.Name, item.Status);
+                    }
+
+                });
+
+
+            }
+
+
+        }
+
+
     }
 }

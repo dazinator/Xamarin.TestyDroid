@@ -1,19 +1,34 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Management;
+using System.Text;
 
 namespace TestyDroid
 {
     public class ProcessWrapper : IProcess
     {
-        private ProcessStartInfo _processStartInfo;
+        private ProcessStartInfo _processStartInfo = null;
         private bool _isRunning;
-        private Process _process;
+        private Process _process = null;
+        private string _args = null;
+        private string _fileName = null;
 
         public string FileName
         {
             get
             {
-                return _processStartInfo.FileName;
+                if (_fileName == null)
+                {
+                    if (_processStartInfo != null)
+                    {
+                        _fileName = _processStartInfo.FileName;
+                    }
+                    else
+                    {
+                        _fileName = _process.MainModule.FileName;
+                    }
+                }
+                return _fileName;
             }
         }
 
@@ -21,7 +36,18 @@ namespace TestyDroid
         {
             get
             {
-                return _processStartInfo.Arguments;
+                if (_args == null)
+                {
+                    if (_processStartInfo != null)
+                    {
+                        _args = _processStartInfo.Arguments;
+                    }
+                    else
+                    {
+                        _args = GetCommandLine(this._process);
+                    }
+                }
+                return _args;
             }
         }
 
@@ -38,12 +64,33 @@ namespace TestyDroid
             _processStartInfo = processStartInfo;
         }
 
+        public ProcessWrapper(Process process)
+        {
+            _process = process;
+            _isRunning = true;
+            _processStartInfo = null;
+        }
+
         public void Start(string args = null)
         {
-            if (args != null)
+            // The only time process start info would be null is if we are wrapping an existing running process.
+            if (_processStartInfo == null)
             {
-                _processStartInfo.Arguments = args;
+                // in that case create a new start info, using current filename and arguments.
+                var fileName = this.FileName;
+                var startArgs = args ?? this.Arguments;
+                _processStartInfo = new ProcessStartInfo(fileName, startArgs);
             }
+            else
+            {
+                // We allready have a start info, but allow args to be overriden.
+                if (args != null)
+                {
+                    _processStartInfo.Arguments = args;
+                }
+            }
+
+            // Starts the process.
             _process = Process.Start(_processStartInfo);
             _isRunning = true;
         }
@@ -74,6 +121,7 @@ namespace TestyDroid
             {
                 _process.Close();
                 _process = null;
+                _isRunning = false;
             }
         }
 
@@ -87,5 +135,23 @@ namespace TestyDroid
             _process.WaitForExit();
             return _process.ExitCode;
         }
+
+        private string GetCommandLine(Process process)
+        {
+            var commandLine = new StringBuilder(process.MainModule.FileName);
+
+            commandLine.Append(" ");
+            using (var searcher = new ManagementObjectSearcher("SELECT CommandLine FROM Win32_Process WHERE ProcessId = " + process.Id))
+            {
+                foreach (var @object in searcher.Get())
+                {
+                    commandLine.Append(@object["CommandLine"]);
+                    commandLine.Append(" ");
+                }
+            }
+
+            return commandLine.ToString();
+        }
     }
+
 }

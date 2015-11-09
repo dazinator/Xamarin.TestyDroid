@@ -4,7 +4,7 @@ using System;
 using System.Threading;
 
 namespace TestyDroid.Tests
-{    
+{
     [TestFixture(Category = "Integration")]
     public class EmulatorTests
     {
@@ -18,9 +18,8 @@ namespace TestyDroid.Tests
             var adbFactory = new AndroidDebugBridgeFactory(TestConfig.PathToAdbExe);
             int consolePort = 5554;
             var emuFactory = new AndroidSdkEmulatorFactory(logger, TestConfig.PathToAndroidEmulatorExe, adbFactory, TestConfig.AvdName, consolePort, true, false, emuId);
-         
-            IEmulator droidEmulator = emuFactory.GetEmulator();
 
+            IEmulator droidEmulator = emuFactory.GetEmulator();
         }
 
         [Test]
@@ -59,6 +58,140 @@ namespace TestyDroid.Tests
 
         }
 
+        [Test]
+        [ExpectedException(typeof(InvalidOperationException))]
+        public async void Cannot_Start_Emulator_If_Existing_Device_Using_Port_And_Single_Instance_Mode_Abort_Specified()
+        {
+            var logger = new ConsoleLogger();
+            Guid emuId = Guid.NewGuid();
+
+            var adbFactory = new AndroidDebugBridgeFactory(TestConfig.PathToAdbExe);
+            int consolePort = 5554;
+            var emuFactory = new AndroidSdkEmulatorFactory(logger, TestConfig.PathToAndroidEmulatorExe, adbFactory, TestConfig.AvdName, consolePort, true, true, emuId, SingleInstanceMode.Abort);
+
+            IEmulator droidEmulator = emuFactory.GetEmulator();
+            await droidEmulator.Start(TestConfig.EmulatorStartupTimeout).ContinueWith(async (t) =>
+            {
+                // now try and start another one on same port.
+                IEmulator secondEmulator = emuFactory.GetEmulator();
+                await secondEmulator.Start(TestConfig.EmulatorStartupTimeout).ContinueWith((a) =>
+                {
+
+                    // now try and start another one on same port.
+                    secondEmulator.Stop();
+                });
+
+
+                droidEmulator.Stop();
+            });
+
+        }
+
+        [Test]
+        public async void Can_Start_Emulator_If_Existing_Device_Using_Port_Then_It_Is_Killed_When_Single_Instance_Mode_KillExisting_Specified()
+        {
+            var logger = new ConsoleLogger();
+            Guid emuId = Guid.NewGuid();
+
+            var adbFactory = new AndroidDebugBridgeFactory(TestConfig.PathToAdbExe);
+            int consolePort = 5554;
+            var emuFactory = new AndroidSdkEmulatorFactory(logger, TestConfig.PathToAndroidEmulatorExe, adbFactory, TestConfig.AvdName, consolePort, true, true, emuId, SingleInstanceMode.KillExisting);
+
+            IEmulator droidEmulator = emuFactory.GetEmulator();
+            await droidEmulator.Start(TestConfig.EmulatorStartupTimeout).ContinueWith((t) =>
+            {
+                // now try and start another one on same port.
+                IEmulator secondEmulator = emuFactory.GetEmulator();
+                secondEmulator.Start(TestConfig.EmulatorStartupTimeout).ContinueWith((a) =>
+                {
+                    // now try and start another one on same port.
+                    secondEmulator.Stop();
+                });
+
+                droidEmulator.Stop();
+            });
+
+        }
+
+        [Test]
+        public async void Can_Start_Emulator_If_Existing_Device_Using_Port_Then_It_Is_Reused_When_Single_Instance_Mode_ReuseExisting_Specified()
+        {
+            var logger = new ConsoleLogger();
+            Guid emuId = Guid.NewGuid();
+
+            var adbFactory = new AndroidDebugBridgeFactory(TestConfig.PathToAdbExe);
+            int consolePort = 5554;
+            var emuFactory = new AndroidSdkEmulatorFactory(logger, TestConfig.PathToAndroidEmulatorExe, adbFactory, TestConfig.AvdName, consolePort, true, true, emuId, SingleInstanceMode.ReuseExisting);
+
+            IEmulator droidEmulator = emuFactory.GetEmulator();
+            await droidEmulator.Start(TestConfig.EmulatorStartupTimeout).ContinueWith((t) =>
+            {
+                // now try and start another one on same port.
+                Guid secondEmuId = Guid.NewGuid();
+                var secondEmuFactory = new AndroidSdkEmulatorFactory(logger, TestConfig.PathToAndroidEmulatorExe, adbFactory, TestConfig.AvdName, consolePort, true, true, secondEmuId, SingleInstanceMode.ReuseExisting);
+
+                IEmulator secondEmulator = secondEmuFactory.GetEmulator();
+                secondEmulator.Start(TestConfig.EmulatorStartupTimeout).Wait();
+
+                // now try and start another one on same port.
+                AndroidDevice device = (AndroidDevice)secondEmulator.Device;
+                var adb = adbFactory.GetAndroidDebugBridge();
+
+                // this second device should actually re-use the first device so should have device 1 emu id, not device 2.
+                var secondId = device.QueryId(adb);
+                Assert.That(Guid.Parse(secondId) != secondEmuId);
+
+                secondEmulator.Stop();
+                droidEmulator.Stop();
+            });
+
+        }
+
+        [ExpectedException(typeof(System.Net.Sockets.SocketException))]
+        [Test]
+        public async void Can_Start_Emulator_If_Existing_Device_Using_Port_Then_It_Is_Reused_And_Killed_Afterwards_When_Single_Instance_Mode_ReuseExistingThenKill_Specified()
+        {
+            var logger = new ConsoleLogger();
+            Guid emuId = Guid.NewGuid();
+
+            var adbFactory = new AndroidDebugBridgeFactory(TestConfig.PathToAdbExe);
+            int consolePort = 5554;
+            var emuFactory = new AndroidSdkEmulatorFactory(logger, TestConfig.PathToAndroidEmulatorExe, adbFactory, TestConfig.AvdName, consolePort, true, true, emuId, SingleInstanceMode.ReuseExistingThenKill);
+
+            IEmulator droidEmulator = emuFactory.GetEmulator();
+            await droidEmulator.Start(TestConfig.EmulatorStartupTimeout).ContinueWith((t) =>
+            {
+
+                var firstDevice = (AndroidDevice)droidEmulator.Device;
+
+                // now try and start another one on same port.
+                Guid secondEmuId = Guid.NewGuid();
+                var secondEmuFactory = new AndroidSdkEmulatorFactory(logger, TestConfig.PathToAndroidEmulatorExe, adbFactory, TestConfig.AvdName, consolePort, true, true, secondEmuId, SingleInstanceMode.ReuseExistingThenKill);
+
+                IEmulator secondEmulator = secondEmuFactory.GetEmulator();
+                secondEmulator.Start(TestConfig.EmulatorStartupTimeout).Wait();
+
+                // now try and start another one on same port.
+                AndroidDevice device = (AndroidDevice)secondEmulator.Device;
+
+                Assert.That(device.FullName() == firstDevice.FullName());
+
+                var adb = adbFactory.GetAndroidDebugBridge();
+
+                // this should result in the device being killed.
+                secondEmulator.Stop();
+
+                var devices = adb.GetDevices();
+                // device should no longer be listed.
+                foreach (var d in devices)
+                {
+                    Assert.That(d.FullName() != firstDevice.FullName());
+                }
+
+                droidEmulator.Stop();
+            });
+
+        }
 
         //var task = new RunAndroidTests();
         //task.AdbExePath = PathToAdbExe;

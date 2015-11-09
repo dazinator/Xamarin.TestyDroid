@@ -50,7 +50,7 @@ namespace TestyDroid
 
                 if (options.EmulatorType == "sdk")
                 {
-                    emulatorFactory = new AndroidSdkEmulatorFactory(logger, options.EmulatorExePath, adbFactory, options.ImageName, options.PortNumber, true, true, emuId);
+                    emulatorFactory = new AndroidSdkEmulatorFactory(logger, options.EmulatorExePath, adbFactory, options.ImageName, options.PortNumber, true, true, emuId, options.SingleInstanceMode);
                 }
                 else
                 {
