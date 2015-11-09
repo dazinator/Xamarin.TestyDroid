@@ -10,11 +10,11 @@ See here: https://github.com/dazinator/Xamarin.TestyDroid/wiki/Getting-Started
 
 TestyDroid handles all of the following for you:
 
-1. Starting an android emulator.
+1. Starting the android emulator. (Or can use an existing instance) 
 2. Loading the desired AVD and detecting when it has successfully booted.
 4. Installing the APK package containing your tests
 5. Launching your tests and collating the report.
-6. Ensuring the emulator is terminated afterwards.
+6. Ensuring the emulator is terminated appropriately afterwards.
 
 Test Results are written to `STDOUT` (console out) by default, however there is the option to specify `TeamCity` as the reporter, in which case test results [will be reported in Team City format](https://confluence.jetbrains.com/display/TCD65/Build+Script+Interaction+with+TeamCity) and so will appear in the Team City user interface if invoked during a Team City build.
 
@@ -69,6 +69,11 @@ Call Xamarin.TestyDroid.exe from the command line, with the following arguments:
   -p, --portnumber                  (Default: 5554) The port number that the
                                     android console will be listening on, on
                                     localhost.
+                                    
+  -s, --single-instance-mode        (Default: Abort) Controls what happens if there is 
+                                    an existing device detected already running on
+                                    the same console port. Options are: Abort,
+                                    KillExisting, ReuseExisting and ReuseExistingThenKill
 
   --help                            Display this help screen.
 
