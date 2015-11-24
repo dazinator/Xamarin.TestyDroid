@@ -141,7 +141,7 @@ namespace TestyDroid
                 }
             }
 
-            throw new Exception(string.Format("Unable to install APK file: {0}. Message: {1}", apkFilePath, output.ToString()));            
+            throw new Exception(string.Format("Unable to install APK file: {0}. Message: {1}", apkFilePath, output.ToString()));
         }
 
         public static string GetEnumDescription(Enum value)
@@ -198,18 +198,55 @@ namespace TestyDroid
             {
                 args.AppendFormat("-s {0} ", device.FullName());
             }
-            args.AppendFormat("shell cat {0}", path);                
+            args.AppendFormat("shell cat {0}", path);
 
             StringBuilder output = new StringBuilder();
             _adbProcess.Start(args.ToString());
 
             _adbProcess.ListenToStandardOut((outMessage) =>
             {
-                output.AppendLine(outMessage);               
+                output.AppendLine(outMessage);
             });
 
             _adbProcess.WaitForExit();
             return output.ToString();
+        }
+
+        public void RestartServer()
+        {
+
+            StringBuilder output = new StringBuilder();
+
+            _adbProcess.Start("kill-server");
+            _adbProcess.ListenToStandardOut((outMessage) =>
+            {
+                output.AppendLine(outMessage);
+            });
+
+            _adbProcess.WaitForExit();
+            _adbProcess.Stop();
+
+            output.Clear();
+
+            _adbProcess.Start("start-server");
+            _adbProcess.ListenToStandardOut((outMessage) =>
+            {
+                output.AppendLine(outMessage);
+            });
+
+            _adbProcess.WaitForExit();
+            _adbProcess.Stop();
+
+            if (!string.IsNullOrWhiteSpace(output.ToString()))
+            {
+                if (output.ToString().Contains("successfully"))
+                {
+                    return;
+                }
+            }
+
+            throw new Exception(string.Format("Unable to restart adb server. Output was: {0}", output.ToString()));
+
         }
     }
 }

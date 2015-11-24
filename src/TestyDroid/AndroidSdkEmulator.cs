@@ -27,7 +27,6 @@ namespace TestyDroid
         private StringBuilder _emulatorExeStandardErrorOut = new StringBuilder();
         private EmulatorAbortDetector _abortDetector = new EmulatorAbortDetector();
 
-
         private bool _LeaveDeviceOpen;
 
         public AndroidSdkEmulator(ILogger logger, IProcess androidEmulatorProcess, IAndroidDebugBridgeFactory adbFactory, Guid id, int? consolePort)
@@ -113,15 +112,10 @@ namespace TestyDroid
                 throw new InvalidOperationException("Emulator is allready running..");
             }
 
-            _logger.LogMessage(string.Format("Starting emulator: {0} {1}", _emulatorProcess.FileName, _emulatorProcess.Arguments));
-            _emulatorProcess.Start();
+            bool restarted = false;
+            const bool allowAdbServerRestart = true;
 
-            _emulatorProcess.ListenToStandardOut((s) =>
-            {
-                _emulatorExeStandardOut.AppendLine(s);
-            });
-
-            _emulatorProcess.ListenToStandardError((s) => _emulatorExeStandardErrorOut.AppendLine(s));
+            StartProcess();
 
             // Now get the devices..
             _logger.LogMessage(string.Format("Finding attached Adb Device: {0}", _id));
@@ -138,7 +132,18 @@ namespace TestyDroid
                 if (_abortDetector.HasAborted(_emulatorExeStandardErrorOut))
                 {
                     WriteEmulatorExeOutputToLog();
-                    throw new Exception("Emulator could not start.");
+
+                    if (!allowAdbServerRestart | restarted)
+                    {
+                        throw new Exception("Emulator could not start.");
+                    }
+                    else
+                    {
+                        _logger.LogMessage("Attempting restart of adb server to resolve an issue.");
+                        Stop();
+                        adb.RestartServer();
+                        StartProcess();
+                    }
                 }
 
                 attempts = attempts + 1;
@@ -175,6 +180,17 @@ namespace TestyDroid
 
             EnsureDeviceAttached();
 
+        }
+
+        private void StartProcess()
+        {
+            _logger.LogMessage(string.Format("Starting emulator: {0} {1}", _emulatorProcess.FileName, _emulatorProcess.Arguments));
+            _emulatorProcess.Start();
+            _emulatorProcess.ListenToStandardOut((s) =>
+            {
+                _emulatorExeStandardOut.AppendLine(s);
+            });
+            _emulatorProcess.ListenToStandardError((s) => _emulatorExeStandardErrorOut.AppendLine(s));
         }
 
         private void EnsureDeviceAttached()

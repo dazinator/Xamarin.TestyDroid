@@ -14,5 +14,6 @@ namespace TestyDroid
         void Install(Device device, string apkFilePath, AdbInstallFlags installFlags = AdbInstallFlags.None);
         string StartInstrument(Device device, string packageName, string runnerClass, Action<string> onStdOut);
         string ReadFileContents(Device device, string path);
+        void RestartServer();
     }
 }
