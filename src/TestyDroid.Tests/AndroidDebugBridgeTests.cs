@@ -186,7 +186,7 @@ namespace TestyDroid.Tests
 
         }
 
-        
+
         [Test]
         [TestCase(SingleInstanceMode.Abort)]
         [TestCase(SingleInstanceMode.KillExisting)]
@@ -226,6 +226,16 @@ namespace TestyDroid.Tests
 
             }
 
+
+        }
+
+
+        [Test]
+        public async void Can_Restart()
+        {                     
+            var adbFactory = new AndroidDebugBridgeFactory(TestConfig.PathToAdbExe);
+            var adb = adbFactory.GetAndroidDebugBridge();
+            adb.RestartServer();
 
         }
 
