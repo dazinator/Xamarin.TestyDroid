@@ -67,8 +67,8 @@ namespace TestyDroid
             }
             else
             {
-                _logger.LogMessage("Cannot kill as no device attached.");
-                throw new InvalidOperationException("Unable to kill device as device not yet attached.");
+                _logger.LogMessage("No device attached, so nothing to kill.");
+                //  throw new InvalidOperationException("Unable to kill device as device not yet attached.");
             }
         }
 
