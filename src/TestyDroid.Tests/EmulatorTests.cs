@@ -70,20 +70,35 @@ namespace TestyDroid.Tests
             var emuFactory = new AndroidSdkEmulatorFactory(logger, TestConfig.PathToAndroidEmulatorExe, adbFactory, TestConfig.AvdName, consolePort, true, true, emuId, SingleInstanceMode.Abort);
 
             IEmulator droidEmulator = emuFactory.GetEmulator();
+            Exception e = null;
+                        
+            var handles = new AutoResetEvent[] { new AutoResetEvent(false), new AutoResetEvent(false) };
+            
             await droidEmulator.Start(TestConfig.EmulatorStartupTimeout).ContinueWith(async (t) =>
             {
                 // now try and start another one on same port.
                 IEmulator secondEmulator = emuFactory.GetEmulator();
                 await secondEmulator.Start(TestConfig.EmulatorStartupTimeout).ContinueWith((a) =>
                 {
-
-                    // now try and start another one on same port.
+                    if (a.IsFaulted)
+                    {
+                        e = a.Exception.InnerExceptions[0];
+                    }
+                  
                     secondEmulator.Stop();
+                    handles[0].Set();
+
                 });
-
-
                 droidEmulator.Stop();
+                handles[1].Set();
             });
+
+            WaitHandle.WaitAll(handles, new TimeSpan(0, 2, 0));          
+            if (e != null)
+            {
+                var rootEx = e.GetBaseException();
+                throw rootEx;
+            }
 
         }
 
@@ -147,7 +162,7 @@ namespace TestyDroid.Tests
 
         }
 
-        [ExpectedException(typeof(System.Net.Sockets.SocketException))]
+
         [Test]
         public async void Can_Start_Emulator_If_Existing_Device_Using_Port_Then_It_Is_Reused_And_Killed_Afterwards_When_Single_Instance_Mode_ReuseExistingThenKill_Specified()
         {
@@ -181,11 +196,13 @@ namespace TestyDroid.Tests
                 // this should result in the device being killed.
                 secondEmulator.Stop();
 
-                var devices = adb.GetDevices();
+                Thread.Sleep(new TimeSpan(0, 0, 3)); // give time for device to be killed.
+
                 // device should no longer be listed.
+                var devices = adb.GetDevices();
                 foreach (var d in devices)
                 {
-                    Assert.That(d.FullName() != firstDevice.FullName());
+                    Assert.That(d.FullName() != firstDevice.FullName(), "device was still listed in adb devices after it was killed");
                 }
 
                 droidEmulator.Stop();

@@ -61,10 +61,11 @@
     <Compile Include="AdbInstallFlags.cs" />
     <Compile Include="AndroidDebugBridge.cs" />
     <Compile Include="AndroidDevice.cs" />
+    <Compile Include="AndroidEmulatorInstanceInfo.cs" />
     <Compile Include="AndroidSdkEmulator.cs" />
     <Compile Include="AndroidSdkEmulatorFactory.cs" />
     <Compile Include="AndroidTestRunner.cs" />
-    <Compile Include="BaseFactory.cs" />
+    <Compile Include="ExistingEmulatorExeProcess.cs" />
     <Compile Include="ConsoleLogger.cs" />
     <Compile Include="EmulatorAbortDetector.cs" />
     <Compile Include="IAndroidDebugBridge.cs" />
@@ -77,6 +78,8 @@
     <Compile Include="ITestReporter.cs" />
     <Compile Include="ITestRunner.cs" />
     <Compile Include="DefaultProgressReporter.cs" />
+    <Compile Include="AndroidEmulatorProcessInstanceResolver.cs" />
+    <Compile Include="ProcessHelper.cs" />
     <Compile Include="RunAndroidTestsOptions.cs" />
     <Compile Include="ProcessWrapper.cs" />
     <Compile Include="Program.cs" />

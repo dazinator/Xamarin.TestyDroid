@@ -231,7 +231,7 @@ namespace TestyDroid.Tests
 
 
         [Test]
-        public async void Can_Restart()
+        public void Can_Restart()
         {                     
             var adbFactory = new AndroidDebugBridgeFactory(TestConfig.PathToAdbExe);
             var adb = adbFactory.GetAndroidDebugBridge();

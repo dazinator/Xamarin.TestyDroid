@@ -17,7 +17,7 @@ namespace TestyDroid
     {
 
         private const string IdPropertyName = "emu.uuid";
-        
+
         public string Name { get; set; }
         public string Status { get; set; }
         public int Port { get; set; }
@@ -74,6 +74,7 @@ namespace TestyDroid
 
         public void Kill(ILogger logger)
         {
+
             logger.LogMessage(string.Format("Killing device: {0}", FullName()));
             TcpClient client = new TcpClient("localhost", Port);
             using (var stream = client.GetStream())

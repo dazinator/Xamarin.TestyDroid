@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace TestyDroid
 {
-    public class AndroidDebugBridgeFactory : BaseFactory, IAndroidDebugBridgeFactory
+    public class AndroidDebugBridgeFactory : IAndroidDebugBridgeFactory
     {
         private string _adbExePath;
 
@@ -18,7 +18,7 @@ namespace TestyDroid
 
         public IAndroidDebugBridge GetAndroidDebugBridge()
         {
-            var process = GetProcess(_adbExePath, null);
+            var process = ProcessHelper.GetProcess(_adbExePath, null);
             return new AndroidDebugBridge(process);
         }
     }

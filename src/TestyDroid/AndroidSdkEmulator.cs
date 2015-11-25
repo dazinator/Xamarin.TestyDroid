@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
@@ -14,45 +15,35 @@ namespace TestyDroid
     {
 
         private ILogger _logger;
-
         private Guid _id;
         private bool _isBootComplete;
         private int? _consolePort;
-        private IAndroidDebugBridgeFactory _adbFactory;
-        private IProcess _emulatorProcess;
-        private AndroidDevice _androidDevice;
-        private bool _errorOnStartDetected;
+        private IAndroidDebugBridgeFactory _adbFactory;       
+        private SingleInstanceMode _instanceMode;
+        private string _avdName;
+        private bool _noBootAnime;
+        private bool _noWindow;
+        private AndroidEmulatorInstanceResolver _instanceResolver;
+        private AndroidEmulatorInstanceInfo _instanceInfo;
 
-        private StringBuilder _emulatorExeStandardOut = new StringBuilder();
-        private StringBuilder _emulatorExeStandardErrorOut = new StringBuilder();
-        private EmulatorAbortDetector _abortDetector = new EmulatorAbortDetector();
-
-        private bool _LeaveDeviceOpen;
-
-        public AndroidSdkEmulator(ILogger logger, IProcess androidEmulatorProcess, IAndroidDebugBridgeFactory adbFactory, Guid id, int? consolePort)
+        public AndroidSdkEmulator(ILogger logger, string emulatorExePath, string avdName, IAndroidDebugBridgeFactory adbFactory, Guid id, int? consolePort, SingleInstanceMode instanceMode = SingleInstanceMode.KillExisting, bool noBootAnim = true, bool noWindow = true)
         {
             _logger = logger;
-            _emulatorProcess = androidEmulatorProcess;
+            _avdName = avdName;
             _adbFactory = adbFactory;
             _id = id;
             _consolePort = consolePort;
-        }
-
-        public AndroidSdkEmulator(ILogger logger, IProcess androidEmulatorProcess, IAndroidDebugBridgeFactory adbFactory, AndroidDevice existingDevice, bool leaveDeviceOpen)
-        {
-            _logger = logger;
-            _emulatorProcess = androidEmulatorProcess;
-            _adbFactory = adbFactory;
-            _consolePort = existingDevice.Port;
-            _androidDevice = existingDevice;
-            _LeaveDeviceOpen = leaveDeviceOpen;
-        }
+            _instanceMode = instanceMode;
+            _noBootAnime = noBootAnim;
+            _noWindow = noWindow;
+            _instanceResolver = new AndroidEmulatorInstanceResolver(logger, adbFactory, emulatorExePath);
+        }      
 
         public bool IsRunning
         {
             get
             {
-                return _emulatorProcess != null && _emulatorProcess.IsRunning;
+                return _instanceInfo != null && _instanceInfo.IsRunning;
             }
         }
 
@@ -114,22 +105,21 @@ namespace TestyDroid
 
             bool restarted = false;
             const bool allowAdbServerRestart = true;
-
-            StartProcess();
+            StartInstance();
 
             // Now get the devices..
             _logger.LogMessage(string.Format("Finding attached Adb Device: {0}", _id));
 
-            // poll for attached device.
-            var adb = _adbFactory.GetAndroidDebugBridge();
+            // poll for attached device.         
 
-            bool hasAttached = false;
+
+            var adb = _adbFactory.GetAndroidDebugBridge();
             TimeSpan pollingFrequency = new TimeSpan(0, 0, 2);
             int attempts = 0;
 
-            while (!hasAttached)
+            while (this.Device == null)
             {
-                if (_abortDetector.HasAborted(_emulatorExeStandardErrorOut))
+                if (_instanceInfo.DetectAborted())
                 {
                     WriteEmulatorExeOutputToLog();
 
@@ -142,10 +132,18 @@ namespace TestyDroid
                         _logger.LogMessage("Attempting restart of adb server to resolve an issue.");
                         Stop();
                         adb.RestartServer();
-                        StartProcess();
+                        restarted = true;
+                        // Now try and start a new instance.
+                        StartInstance();
+                        // We may now see an existing device, so check.
+                        if (Device != null)
+                        {
+                            break;
+                        }
                     }
                 }
 
+                // Need to query the devices to see if ours is attached yet.
                 attempts = attempts + 1;
                 var devices = adb.GetDevices();
                 var matchingPortDevices = devices.Where(d => d.Port == _consolePort);
@@ -162,13 +160,14 @@ namespace TestyDroid
 
                     if (id == _id.ToString())
                     {
-                        _androidDevice = device;
-                        hasAttached = true;
+                        _instanceInfo.Device = device;
                         _logger.LogMessage(string.Format("Device Attached"));
+                        break;
                     }
                 }
 
-                if (!hasAttached)
+                // if still not attached, check for timeout.
+                if (this.Device == null)
                 {
                     if (DateTime.UtcNow.Add(pollingFrequency) > expiryTime)
                     {
@@ -182,15 +181,13 @@ namespace TestyDroid
 
         }
 
-        private void StartProcess()
+
+
+        private void StartInstance()
         {
-            _logger.LogMessage(string.Format("Starting emulator: {0} {1}", _emulatorProcess.FileName, _emulatorProcess.Arguments));
-            _emulatorProcess.Start();
-            _emulatorProcess.ListenToStandardOut((s) =>
-            {
-                _emulatorExeStandardOut.AppendLine(s);
-            });
-            _emulatorProcess.ListenToStandardError((s) => _emulatorExeStandardErrorOut.AppendLine(s));
+            _logger.LogMessage("Resolving emulator instance");
+            _instanceInfo = _instanceResolver.EnsureInstance(_instanceMode, _id, _avdName, _consolePort, _noBootAnime, _noWindow);
+            _instanceInfo.Start();
         }
 
         private void EnsureDeviceAttached()
@@ -206,25 +203,9 @@ namespace TestyDroid
 
         private void WriteEmulatorExeOutputToLog()
         {
-
-            if (_emulatorExeStandardOut != null)
+            if (_instanceInfo != null)
             {
-                _logger.LogMessage(string.Format("Standard output from {0} was: ", _emulatorProcess.FileName));
-                _logger.LogMessage(_emulatorExeStandardOut.ToString());
-            }
-            else
-            {
-                _logger.LogMessage(string.Format("Standard output for emulator.exe process not available."));
-            }
-
-            if (_emulatorExeStandardErrorOut != null)
-            {
-                _logger.LogMessage(string.Format("Standard error output from {0} was: ", _emulatorProcess.FileName));
-                _logger.LogMessage(_emulatorExeStandardErrorOut.ToString());
-            }
-            else
-            {
-                _logger.LogMessage(string.Format("Standard error output for emulator.exe process not available."));
+                _instanceInfo.LogStandardOutput();
             }
         }
 
@@ -239,38 +220,8 @@ namespace TestyDroid
         {
             if (IsRunning)
             {
-                if (!_LeaveDeviceOpen)
-                {
-                    this.KillDevice();
-                }
-                else
-                {
-                    _logger.LogMessage("Device will be left open.");
-                }
-                _emulatorProcess.Stop();
-                _emulatorProcess = null;
-            }
-        }
-
-        private void KillDevice()
-        {
-            var device = this._androidDevice;
-            if (device != null)
-            {
-                try
-                {
-                    device.Kill(_logger);
-                }
-                catch (SocketException se)
-                {
-                    _logger.LogMessage("Socket exception caught when attempting to kill the device. This usually means the device has allready closed.");
-                    throw;
-                }
-            }
-            else
-            {
-                _logger.LogMessage("Cannot kill as no device attached.");
-                throw new InvalidOperationException("Unable to kill device as device not yet attached.");
+                _instanceInfo.Stop();
+                _instanceInfo = null;
             }
         }
 
@@ -322,7 +273,21 @@ namespace TestyDroid
             }
         }
 
-        public Device Device { get { return _androidDevice; } }
+        public Device Device
+        {
+            get
+            {
+                if (_instanceInfo != null)
+                {
+                    return _instanceInfo.Device;
+                }
+                else
+                {
+                    return null;
+                }
+
+            }
+        }
 
     }
 }

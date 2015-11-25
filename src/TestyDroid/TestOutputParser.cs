@@ -167,8 +167,7 @@ namespace TestyDroid
             {
                 resultKind = key.Trim();
             }
-
-            int count;
+          
             switch (resultKind)
             {
                 case "failure":
