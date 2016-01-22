@@ -101,13 +101,23 @@ namespace TestyDroid
             {
                 return false;
             }
-           
+
             var reportPath = value;
             var adb = _adbFactory.GetAndroidDebugBridge();
             var fileContents = adb.ReadFileContents(_device, reportPath);
 
             XmlDocument report = new XmlDocument();
-            report.LoadXml(fileContents);
+
+            try
+            {
+                report.LoadXml(fileContents);
+            }
+            catch (Exception e)
+            {
+                throw new Exception(string.Format("Unable to load report file: {0}, the contents of the file returned from adb were: {1}", reportPath, fileContents));
+
+            }
+
 
             var testResults = report.GetElementsByTagName("TestResult");
             foreach (XmlElement testResult in testResults)
@@ -167,7 +177,7 @@ namespace TestyDroid
             {
                 resultKind = key.Trim();
             }
-          
+
             switch (resultKind)
             {
                 case "failure":

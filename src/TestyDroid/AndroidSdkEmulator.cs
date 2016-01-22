@@ -237,7 +237,7 @@ namespace TestyDroid
             WaitForProperty(expiryTime, "dev.bootcomplete", "1");
             WaitForProperty(expiryTime, "sys.boot_completed", "1");
             WaitForProperty(expiryTime, "init.svc.bootanim", "stopped");
-
+            _isBootComplete = true;
 
         }
 

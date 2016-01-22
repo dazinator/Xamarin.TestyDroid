@@ -20,11 +20,23 @@ namespace TestyDroid
 
         public string Name { get; set; }
         public string Status { get; set; }
-        public int Port { get; set; }
+        public int? Port { get; set; }
+
+        public bool IsUsb()
+        {
+            return !Port.HasValue;
+        }
 
         public override string FullName()
         {
-            return string.Format("{0}-{1}", Name, Port);
+            if (IsUsb())
+            {
+                return Name;
+            }
+            else
+            {
+                return string.Format("{0}-{1}", Name, Port);
+            }
         }
 
         public static AndroidDevice Parse(string deviceMessage)
@@ -49,7 +61,9 @@ namespace TestyDroid
                         device.Name = nameParts[0];
                     }
 
-                    if (deviceParts.Length > 1)
+                    //if (deviceParts.Length > 1)
+                    //{
+                    if (nameParts.Length > 1)
                     {
                         int port;
                         if (int.TryParse(nameParts[1], out port))
@@ -57,6 +71,12 @@ namespace TestyDroid
                             device.Port = port;
                         }
                     }
+                    else
+                    {
+                        device.Port = null;
+                    }
+
+                    //
                 }
                 if (deviceParts.Length > 1)
                 {
@@ -75,8 +95,13 @@ namespace TestyDroid
         public void Kill(ILogger logger)
         {
 
+            if (this.IsUsb())
+            {
+                throw new InvalidOperationException("Can not kill a device that is connected by USB.. Can only kill emulated devices.");
+            }
+
             logger.LogMessage(string.Format("Killing device: {0}", FullName()));
-            TcpClient client = new TcpClient("localhost", Port);
+            TcpClient client = new TcpClient("localhost", Port.Value);
             using (var stream = client.GetStream())
             {
 

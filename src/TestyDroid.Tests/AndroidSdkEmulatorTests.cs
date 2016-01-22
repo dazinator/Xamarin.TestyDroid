@@ -6,7 +6,7 @@ using System.Threading;
 namespace TestyDroid.Tests
 {
     [TestFixture(Category = "Integration")]
-    public class EmulatorTests
+    public class AndroidSdkEmulatorTests
     {
 
         [Test]

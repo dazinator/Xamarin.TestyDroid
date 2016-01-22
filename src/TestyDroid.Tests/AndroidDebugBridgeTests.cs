@@ -12,7 +12,7 @@ namespace TestyDroid.Tests
     public class AndroidDebugBridgeTests
     {
         [Test]
-        public async void Can_Get_Devices()
+        public async void Can_Get_Emulated_Device()
         {
             var logger = new ConsoleLogger();
             Guid emuId = Guid.NewGuid();
@@ -33,7 +33,7 @@ namespace TestyDroid.Tests
                     Assert.That(devices, Is.Not.Null);
                     Assert.That(devices.Length, Is.GreaterThanOrEqualTo(1));
 
-                    var deviceFound = devices.Where(a => a.Port == consolePort).FirstOrDefault();
+                    var deviceFound = devices.Where(a => a.Port.GetValueOrDefault() == consolePort).FirstOrDefault();
                     Assert.That(deviceFound, Is.Not.Null);
 
                     foreach (var item in devices)
@@ -47,6 +47,29 @@ namespace TestyDroid.Tests
             }
 
 
+        }
+
+        [Test]
+        public void Can_Get_Physical_Device()
+        {
+            // YOU MUST HAVE A DEVICE ATTACHED OTHERWISE THIS TEST WILL ALWAYS FAIL.    
+
+            // Start an emulator.
+            var adbFactory = new AndroidDebugBridgeFactory(TestConfig.PathToAdbExe);
+
+            var adb = adbFactory.GetAndroidDebugBridge();
+            var devices = adb.GetDevices();
+
+            Assert.That(devices, Is.Not.Null);
+            Assert.That(devices.Length, Is.GreaterThanOrEqualTo(1));
+
+            var deviceFound = devices.Where(a => !a.Port.HasValue).FirstOrDefault();
+            Assert.That(deviceFound, Is.Not.Null);
+
+            foreach (var item in devices)
+            {
+                Console.WriteLine("Device Name: {0}, Status: {1}", item.Name, item.Status);
+            }
         }
 
         [Test]
@@ -232,7 +255,7 @@ namespace TestyDroid.Tests
 
         [Test]
         public void Can_Restart()
-        {                     
+        {
             var adbFactory = new AndroidDebugBridgeFactory(TestConfig.PathToAdbExe);
             var adb = adbFactory.GetAndroidDebugBridge();
             adb.RestartServer();
