@@ -8,6 +8,6 @@ namespace TestyDroid
 {
     public interface IEmulatorFactory
     {
-        IEmulator GetEmulator();
+        IAndroidEmulator GetEmulator();
     }
 }

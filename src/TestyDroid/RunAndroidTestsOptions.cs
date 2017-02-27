@@ -63,9 +63,7 @@ namespace TestyDroid
         [Option('i', "imagename", Required = true, HelpText = "The name of the avd image to launch in the emulator.")]
         public string ImageName { get; set; }
 
-        /// <summary>
-        /// The name of the AVD image to launch in the emulator.
-        /// </summary>
+      
         [Option('n', "name", Required = true, HelpText = "The package name of your APK package as per it's manifest.")]
         public string ApkPackageName { get; set; }
 

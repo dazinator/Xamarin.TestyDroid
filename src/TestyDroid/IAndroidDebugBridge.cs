@@ -8,12 +8,12 @@ namespace TestyDroid
 {
     public interface IAndroidDebugBridge
     {
-        string QueryProperty(Device device, string propertyName);
+        string QueryProperty(AndroidDevice device, string propertyName);
         AndroidDevice[] GetDevices();
-        void KillDevice(Device device);
-        void Install(Device device, string apkFilePath, AdbInstallFlags installFlags = AdbInstallFlags.None);
-        string StartInstrument(Device device, string packageName, string runnerClass, Action<string> onStdOut);
-        string ReadFileContents(Device device, string path);
+        void KillDevice(AndroidDevice device);
+        void Install(AndroidDevice device, string apkFilePath, AdbInstallFlags installFlags = AdbInstallFlags.None);
+        string StartInstrument(AndroidDevice device, string packageName, string runnerClass, Action<string> onStdOut);
+        string ReadFileContents(AndroidDevice device, string path);
         void RestartServer();
     }
 }

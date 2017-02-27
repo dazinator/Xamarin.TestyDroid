@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace TestyDroid
 {
@@ -20,10 +17,10 @@ namespace TestyDroid
             _emulatorExePath = emulatorExePath;
         }
 
-        public virtual AndroidEmulatorInstanceInfo EnsureInstance(SingleInstanceMode mode, Guid id, string avdName, int? consolePort, bool noBootAnim, bool noWindow)
+        public virtual AndroidDeviceInstanceInfo EnsureInstance(SingleInstanceMode mode, int? consolePort, Action<StringBuilder> appendExeArgs)
         {
 
-            AndroidEmulatorInstanceInfo result = new AndroidEmulatorInstanceInfo(_logger);
+            AndroidDeviceInstanceInfo result = new AndroidDeviceInstanceInfo(_logger);
 
             var adb = _adbFactory.GetAndroidDebugBridge();
             var devices = adb.GetDevices();
@@ -56,32 +53,17 @@ namespace TestyDroid
             }
 
             // did not detect existing emulator instance / process on port, so proceed to create a new one.
-            StringBuilder args = new StringBuilder();
-            args.AppendFormat("-avd {0}", avdName);
-            if (consolePort.HasValue && consolePort != 0)
-            {
-                args.AppendFormat(" -port {0}", consolePort);
-            }
-            if (noBootAnim)
-            {
-                args.Append(" -no-boot-anim");
-            }
-            if (noWindow)
-            {
-                args.Append(" -no-window");
-            }
-
-            args.AppendFormat(" -prop emu.uuid={0}", id);
-            var process = ProcessHelper.GetProcess(_emulatorExePath, args.ToString());
+            StringBuilder argsBuilder = new StringBuilder();
+            appendExeArgs(argsBuilder);
+            
+            var process = ProcessHelper.GetProcess(_emulatorExePath, argsBuilder.ToString());
 
             result.Process = process;
             result.Device = null;
             result.LeaveDeviceOpen = false;
 
             return result;
-        }
-
-       
+        }       
 
     }
 }

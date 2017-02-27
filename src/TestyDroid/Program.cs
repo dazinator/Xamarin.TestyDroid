@@ -52,13 +52,17 @@ namespace TestyDroid
                 {
                     emulatorFactory = new AndroidSdkEmulatorFactory(logger, options.EmulatorExePath, adbFactory, options.ImageName, options.PortNumber, true, true, emuId, options.SingleInstanceMode);
                 }
+                else if(options.EmulatorType=="ms")
+                {
+                    emulatorFactory = new MicrosoftAndroidEmulatorFactory(logger, options.EmulatorExePath, adbFactory, options.ImageName, options.PortNumber, true, true, emuId, options.SingleInstanceMode);
+                }
                 else
                 {
                     logger.LogMessage("Unsupported emulator type.");
                     return -1;
                 }
 
-                IEmulator droidEmulator = emulatorFactory.GetEmulator();
+                IAndroidEmulator droidEmulator = emulatorFactory.GetEmulator();
                 IProgressReporter reporter = GetReporter(options.ReporterType);
 
                 var testResults = StartEmulatorAndRunTests(reporter, adbFactory, logger, droidEmulator, options);
@@ -104,7 +108,7 @@ namespace TestyDroid
             return 0;
         }
 
-        private static TestResults StartEmulatorAndRunTests(IProgressReporter progressReporter, IAndroidDebugBridgeFactory adbFactory, ILogger logger, IEmulator droidEmulator, RunAndroidTestsOptions options)
+        private static TestResults StartEmulatorAndRunTests(IProgressReporter progressReporter, IAndroidDebugBridgeFactory adbFactory, ILogger logger, IAndroidEmulator droidEmulator, RunAndroidTestsOptions options)
         {
             TimeSpan timeout = TimeSpan.FromSeconds(options.EmulatorStartupWaitTimeInSeconds);
             using (droidEmulator)

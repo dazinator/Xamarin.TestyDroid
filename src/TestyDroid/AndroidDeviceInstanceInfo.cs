@@ -7,14 +7,14 @@ using System.Threading.Tasks;
 
 namespace TestyDroid
 {
-    public class AndroidEmulatorInstanceInfo
+    public class AndroidDeviceInstanceInfo
     {
         private ILogger _logger;
         private StringBuilder _emulatorExeStandardOut = new StringBuilder();
         private StringBuilder _emulatorExeStandardErrorOut = new StringBuilder();
         private EmulatorAbortDetector _abortDetector = new EmulatorAbortDetector();
 
-        public AndroidEmulatorInstanceInfo(ILogger logger)
+        public AndroidDeviceInstanceInfo(ILogger logger)
         {
             _logger = logger;
         }

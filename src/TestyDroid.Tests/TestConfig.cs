@@ -15,7 +15,7 @@ namespace TestyDroid.Tests
         public static string AvdName = "Xamarin_Android_API_15";
 #else
         public static string PathToAndroidSdk = @"C:\Program Files (x86)\Android\android-sdk";     
-        public static string AvdName = "AVD_GalaxyNexus_ToolsForApacheCordova";  
+        public static string AvdName = "AVD_GalaxyNexus_ToolsForApacheCordova";      
 #endif
 
         public static string PathToAndroidSdkTools = System.IO.Path.Combine(PathToAndroidSdk, "tools");
@@ -27,6 +27,9 @@ namespace TestyDroid.Tests
         public static string PathToAndroidTestsApk = @"TestyDroid.TestTests\bin\debug\testydroid.testtests-Signed.apk";
         public static string AndroidTestsInstrumentationClassPath = @"testydroid.testtests.TestInstrumentation";
 
+        public static string PathToMicrosoftEmulatorFolder = System.IO.Path.Combine(@"C:\Program Files (x86)\Microsoft Emulator Manager\1.0");
+        public static string PathToMicrosoftAndroidEmulatorExe = System.IO.Path.Combine(PathToMicrosoftEmulatorFolder, @"emulatorcmd.exe");
+        public static string MicrosoftAvdProfileId = "226C76AC-9E9A-4EBD-A495-79E8C5C5292F";
 
     }
 }

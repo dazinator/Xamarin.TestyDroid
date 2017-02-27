@@ -12,7 +12,7 @@ namespace TestyDroid.Tests
     public class AndroidTestRunnerTests
     {
         [Test]
-        public async void Can_Run_Tests()
+        public async Task Can_Run_Tests()
         {
             var logger = new ConsoleLogger();
             Guid emuId = Guid.NewGuid();
@@ -22,7 +22,7 @@ namespace TestyDroid.Tests
             int consolePort = 5554;
             var emuFactory = new AndroidSdkEmulatorFactory(logger, TestConfig.PathToAndroidEmulatorExe, adbFactory, TestConfig.AvdName, consolePort, true, false, emuId);
 
-            using (IEmulator droidEmulator = emuFactory.GetEmulator())
+            using (IAndroidEmulator droidEmulator = emuFactory.GetEmulator())
             {
                 await droidEmulator.Start(TestConfig.EmulatorStartupTimeout).ContinueWith((t) =>
                 {
@@ -35,7 +35,7 @@ namespace TestyDroid.Tests
                     var adb = adbFactory.GetAndroidDebugBridge();
 
                     // install tests apk
-                    var currentDir = Environment.CurrentDirectory;
+                    var currentDir = TestContext.CurrentContext.TestDirectory;
                     var apkPath = System.IO.Path.Combine(currentDir, "..\\..\\..\\", TestConfig.PathToAndroidTestsApk);
                     adb.Install(droidEmulator.Device, apkPath, AdbInstallFlags.ReplaceExistingApplication);
 
@@ -59,7 +59,7 @@ namespace TestyDroid.Tests
         }
 
         [Test]
-        public async void Can_Report_Tests_To_Default_Reporter()
+        public async Task Can_Report_Tests_To_Default_Reporter()
         {
             var logger = new ConsoleLogger();
             Guid emuId = Guid.NewGuid();
@@ -69,7 +69,7 @@ namespace TestyDroid.Tests
             int consolePort = 5554;
             var emuFactory = new AndroidSdkEmulatorFactory(logger, TestConfig.PathToAndroidEmulatorExe, adbFactory, TestConfig.AvdName, consolePort, true, false, emuId);
 
-            using (IEmulator droidEmulator = emuFactory.GetEmulator())
+            using (IAndroidEmulator droidEmulator = emuFactory.GetEmulator())
             {
                 await droidEmulator.Start(TestConfig.EmulatorStartupTimeout).ContinueWith((t) =>
                 {
@@ -82,7 +82,7 @@ namespace TestyDroid.Tests
                     var adb = adbFactory.GetAndroidDebugBridge();
 
                     // install tests apk
-                    var currentDir = Environment.CurrentDirectory;
+                    var currentDir = TestContext.CurrentContext.TestDirectory;
                     var apkPath = System.IO.Path.Combine(currentDir, "..\\..\\..\\", TestConfig.PathToAndroidTestsApk);
                     adb.Install(droidEmulator.Device, apkPath, AdbInstallFlags.ReplaceExistingApplication);
 
@@ -104,7 +104,7 @@ namespace TestyDroid.Tests
         }
 
         [Test]
-        public async void Can_Report_Tests_To_TeamCity_Reporter()
+        public async Task Can_Report_Tests_To_TeamCity_Reporter()
         {
             var logger = new ConsoleLogger();
             Guid emuId = Guid.NewGuid();
@@ -114,7 +114,7 @@ namespace TestyDroid.Tests
             int consolePort = 5554;
             var emuFactory = new AndroidSdkEmulatorFactory(logger, TestConfig.PathToAndroidEmulatorExe, adbFactory, TestConfig.AvdName, consolePort, true, false, emuId);
 
-            using (IEmulator droidEmulator = emuFactory.GetEmulator())
+            using (IAndroidEmulator droidEmulator = emuFactory.GetEmulator())
             {
                 await droidEmulator.Start(TestConfig.EmulatorStartupTimeout).ContinueWith((t) =>
                 {
@@ -127,7 +127,7 @@ namespace TestyDroid.Tests
                     var adb = adbFactory.GetAndroidDebugBridge();
 
                     // install tests apk
-                    var currentDir = Environment.CurrentDirectory;
+                    var currentDir = TestContext.CurrentContext.TestDirectory;
                     var apkPath = System.IO.Path.Combine(currentDir, "..\\..\\..\\", TestConfig.PathToAndroidTestsApk);
                     adb.Install(droidEmulator.Device, apkPath, AdbInstallFlags.ReplaceExistingApplication);
 

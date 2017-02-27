@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net.Sockets;
 using System.Text;
@@ -21,10 +22,11 @@ namespace TestyDroid
         public string Name { get; set; }
         public string Status { get; set; }
         public int Port { get; set; }
+        private char PortSeperator { get; set; }
 
         public override string FullName()
         {
-            return string.Format("{0}-{1}", Name, Port);
+            return string.Format("{0}{1}{2}", Name, PortSeperator, Port);
         }
 
         public static AndroidDevice Parse(string deviceMessage)
@@ -40,31 +42,42 @@ namespace TestyDroid
                 {
 
                     var devicePartsNamePart = deviceParts[0];
-
-                    var portSeperator = new string[] { "-", ":" };
-                    var nameParts = devicePartsNamePart.Split(portSeperator, StringSplitOptions.RemoveEmptyEntries);
-
-                    if (nameParts.Length > 0)
+                    char seperatorFound;
+                    var portSeperator = new char[] { '-', ':' };
+                    foreach (var sep in portSeperator)
                     {
-                        device.Name = nameParts[0];
-                    }
-
-                    if (deviceParts.Length > 1)
-                    {
-                        int port;
-                        if (int.TryParse(nameParts[1], out port))
+                        if(devicePartsNamePart.Contains(sep))
                         {
-                            device.Port = port;
+                            seperatorFound = sep;
+                            
+                            var nameParts = devicePartsNamePart.Split(new char[] { sep }, StringSplitOptions.RemoveEmptyEntries);
+
+                            if (nameParts.Length > 0)
+                            {
+                                device.Name = nameParts[0];
+                            }
+
+                            if (deviceParts.Length > 1)
+                            {
+                                int port;
+                                if (int.TryParse(nameParts[1], out port))
+                                {
+                                    device.Port = port;
+                                }
+                            }
+
+                            device.PortSeperator = seperatorFound;
+                            break;
                         }
                     }
+
+                   
                 }
                 if (deviceParts.Length > 1)
                 {
                     device.Status = deviceParts[1];
                 }
-
-
-
+                
                 return device;
 
             }
@@ -80,12 +93,45 @@ namespace TestyDroid
             using (var stream = client.GetStream())
             {
 
-                byte[] results = new byte[100];
-                var readCount = stream.Read(results, 0, 100);
+                byte[] results = new byte[500];
+                var readCount = stream.Read(results, 0, 500);
                 var resultText = Encoding.ASCII.GetString(results, 0, readCount);
 
                 logger.LogMessage("Connected to device console.");
                 logger.LogMessage(resultText);
+
+                if(resultText.Contains("Authentication required"))
+                {
+                    logger.LogMessage("Android console is requesting authentication token.");
+
+                    readCount = stream.Read(results, 0, 500);
+                    resultText = Encoding.ASCII.GetString(results, 0, readCount);
+
+                    string path = Directory.GetParent(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)).FullName;
+                    if (Environment.OSVersion.Version.Major >= 6)
+                    {
+                        path = Directory.GetParent(path).ToString();
+                    }
+
+                    var authTokenFilePath = Path.Combine(path, ".emulator_console_auth_token");
+                    if(!File.Exists(authTokenFilePath))
+                    {
+                        logger.LogMessage("Could not find auth token file @ " + authTokenFilePath);
+                        throw new Exception("The android console is asking for an authentication token, however the auth token file doesn't exist @ " + authTokenFilePath);
+                    }
+
+                    var authToken = File.ReadAllText(authTokenFilePath);
+                    var authCommand = Encoding.ASCII.GetBytes("auth " + authToken + Environment.NewLine);
+                    stream.Write(authCommand, 0, authCommand.Length);
+                    stream.Flush();
+
+                   // readCount = stream.Read(results, 0, 500);
+                   // resultText = Encoding.ASCII.GetString(results, 0, readCount);
+
+                    // client.Client.Send(authMessageBytes);
+
+                    //resultText = Encoding.ASCII.GetString(results, 0, readCount);
+                }
 
                 logger.LogMessage("Sending kill command.");
                 var command = Encoding.ASCII.GetBytes("kill" + Environment.NewLine);

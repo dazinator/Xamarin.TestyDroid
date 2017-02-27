@@ -18,9 +18,9 @@ namespace TestyDroid
         private List<Func<string, string, bool>> _bundleResultParsers;
         private StringBuilder _builder;
         private IAndroidDebugBridgeFactory _adbFactory;
-        private Device _device;
+        private AndroidDevice _device;
 
-        public TestOutputParser(IAndroidDebugBridgeFactory adbFactory, Device device)
+        public TestOutputParser(IAndroidDebugBridgeFactory adbFactory, AndroidDevice device)
         {
             _adbFactory = adbFactory;
             _device = device;

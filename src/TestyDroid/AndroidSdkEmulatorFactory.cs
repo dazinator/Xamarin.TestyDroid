@@ -34,7 +34,7 @@ namespace TestyDroid
             _SingleInstanceMode = singleInstanceMode;
         }
 
-        public IEmulator GetEmulator()
+        public IAndroidEmulator GetEmulator()
         {
             return new AndroidSdkEmulator(_Logger, _EmulatorExePath, _avdName, _adbFactory, _id, _port, _SingleInstanceMode, _noBootAnim, _noWindow);
         }

@@ -8,24 +8,35 @@ using System.Threading.Tasks;
 namespace TestyDroid.Tests
 {
 
+    public enum AndroidEmulatorTypes
+    {
+        AndroidSdk = 0,
+        Microsoft = 1
+    }
+
     [TestFixture(Category = "Integration")]
     public class AndroidDebugBridgeTests
     {
+        [TestCase(AndroidEmulatorTypes.Microsoft)]
+        [TestCase(AndroidEmulatorTypes.AndroidSdk)]        
         [Test]
-        public async void Can_Get_Devices()
+        public async Task Can_Get_Devices(AndroidEmulatorTypes emulatorType)
         {
             var logger = new ConsoleLogger();
-            Guid emuId = Guid.NewGuid();
+           
 
             // Start an emulator.
             var adbFactory = new AndroidDebugBridgeFactory(TestConfig.PathToAdbExe);
             int consolePort = 5554;
-            var emuFactory = new AndroidSdkEmulatorFactory(logger, TestConfig.PathToAndroidEmulatorExe, adbFactory, TestConfig.AvdName, consolePort, true, false, emuId);
+
+            IEmulatorFactory emuFactory = GetEmulatorFactory(emulatorType, logger, adbFactory, consolePort);  //GetEmulatorFactory(emulatorType); 
 
             using (IEmulator droidEmulator = emuFactory.GetEmulator())
             {
                 await droidEmulator.Start(TestConfig.EmulatorStartupTimeout).ContinueWith((t) =>
                 {
+
+                    Assert.False(t.IsFaulted, "Exception occurred starting emulator: " + t.Exception?.ToString());
                     // sut
                     var adb = adbFactory.GetAndroidDebugBridge();
                     var devices = adb.GetDevices();
@@ -49,8 +60,27 @@ namespace TestyDroid.Tests
 
         }
 
+        private IEmulatorFactory GetEmulatorFactory(AndroidEmulatorTypes emulatorType, ILogger logger, IAndroidDebugBridgeFactory adbFactory, int consolePort, bool noBootAnim = true, bool noWindow = false, SingleInstanceMode instanceMode = SingleInstanceMode.Abort)
+        {
+            Guid emuId = Guid.NewGuid();
+            switch (emulatorType)
+            {
+                case AndroidEmulatorTypes.AndroidSdk:
+                  
+                    return new AndroidSdkEmulatorFactory(logger, TestConfig.PathToAndroidEmulatorExe, adbFactory, TestConfig.AvdName, consolePort, noBootAnim, noWindow, emuId, instanceMode);
+                   // break;
+                case AndroidEmulatorTypes.Microsoft:
+                    return new MicrosoftAndroidEmulatorFactory(logger, TestConfig.PathToMicrosoftAndroidEmulatorExe, adbFactory, TestConfig.MicrosoftAvdProfileId, consolePort, noBootAnim, noWindow, emuId, instanceMode);
+                   // break;
+            }
+
+            throw new  NotImplementedException();
+        }
+
+        [TestCase(AndroidEmulatorTypes.Microsoft)]
+        [TestCase(AndroidEmulatorTypes.AndroidSdk)]
         [Test]
-        public async void Can_Install_Apk()
+        public async Task Can_Install_Apk(AndroidEmulatorTypes emulatorType)
         {
             var logger = new ConsoleLogger();
             Guid emuId = Guid.NewGuid();
@@ -58,15 +88,19 @@ namespace TestyDroid.Tests
             // Start an emulator.
             var adbFactory = new AndroidDebugBridgeFactory(TestConfig.PathToAdbExe);
             int consolePort = 5554;
-            var emuFactory = new AndroidSdkEmulatorFactory(logger, TestConfig.PathToAndroidEmulatorExe, adbFactory, TestConfig.AvdName, consolePort, true, false, emuId);
+            var emuFactory = GetEmulatorFactory(emulatorType, logger, adbFactory, consolePort, true, false);
 
-            using (IEmulator droidEmulator = emuFactory.GetEmulator())
+            // new 
+
+            using (IAndroidEmulator droidEmulator = emuFactory.GetEmulator())
             {
                 await droidEmulator.Start(TestConfig.EmulatorStartupTimeout).ContinueWith((t) =>
                 {
+                    Assert.False(t.IsFaulted, "Exception occurred starting emulator: " + t.Exception?.ToString());
+                  
                     // sut
                     var adb = adbFactory.GetAndroidDebugBridge();
-                    var currentDir = Environment.CurrentDirectory;
+                    var currentDir = TestContext.CurrentContext.TestDirectory; // Environment.CurrentDirectory;
 
                     var apkPath = System.IO.Path.Combine(currentDir, "..\\..\\..\\", TestConfig.PathToAndroidTestsApk);
 
@@ -74,16 +108,13 @@ namespace TestyDroid.Tests
 
 
                 });
-
-
             }
-
-
         }
 
-
+        [TestCase(AndroidEmulatorTypes.Microsoft)]
+        [TestCase(AndroidEmulatorTypes.AndroidSdk)]
         [Test]
-        public async void Can_Install_Apk_From_Relative_Path()
+        public async Task Can_Install_Apk_From_Relative_Path(AndroidEmulatorTypes emulatorType)
         {
             var logger = new ConsoleLogger();
             Guid emuId = Guid.NewGuid();
@@ -91,12 +122,16 @@ namespace TestyDroid.Tests
             // Start an emulator.
             var adbFactory = new AndroidDebugBridgeFactory(TestConfig.PathToAdbExe);
             int consolePort = 5554;
-            var emuFactory = new AndroidSdkEmulatorFactory(logger, TestConfig.PathToAndroidEmulatorExe, adbFactory, TestConfig.AvdName, consolePort, true, false, emuId);
 
-            using (IEmulator droidEmulator = emuFactory.GetEmulator())
+            var emuFactory = GetEmulatorFactory(emulatorType, logger, adbFactory, consolePort, true, false);
+            //var emuFactory = new AndroidSdkEmulatorFactory(logger, TestConfig.PathToAndroidEmulatorExe, adbFactory, TestConfig.AvdName, consolePort, true, false, emuId);
+
+            using (IAndroidEmulator droidEmulator = emuFactory.GetEmulator())
             {
                 await droidEmulator.Start(TestConfig.EmulatorStartupTimeout).ContinueWith((t) =>
                 {
+                    Assert.False(t.IsFaulted, "Exception occurred starting emulator: " + t.Exception?.ToString());
+
                     // sut
                     var adb = adbFactory.GetAndroidDebugBridge();
                     var currentDir = Environment.CurrentDirectory;
@@ -105,16 +140,14 @@ namespace TestyDroid.Tests
 
 
                 });
-
-
             }
-
-
         }
 
+        [TestCase(AndroidEmulatorTypes.Microsoft)]
+        [TestCase(AndroidEmulatorTypes.AndroidSdk)]
         [Test]
-        [ExpectedException(typeof(Exception), ExpectedMessage = "Unable to install", MatchType = MessageMatch.Contains)]
-        public async void Cannot_Install_Non_Existing_APK()
+        //[ExpectedException(typeof(Exception), ExpectedMessage = "Unable to install", MatchType = MessageMatch.Contains)]
+        public async Task Cannot_Install_Non_Existing_APK(AndroidEmulatorTypes emulatorType)
         {
             var logger = new ConsoleLogger();
             Guid emuId = Guid.NewGuid();
@@ -122,31 +155,32 @@ namespace TestyDroid.Tests
             // Start an emulator.
             var adbFactory = new AndroidDebugBridgeFactory(TestConfig.PathToAdbExe);
             int consolePort = 5554;
-            var emuFactory = new AndroidSdkEmulatorFactory(logger, TestConfig.PathToAndroidEmulatorExe, adbFactory, TestConfig.AvdName, consolePort, true, false, emuId);
+            var emuFactory = GetEmulatorFactory(emulatorType, logger, adbFactory, consolePort, true, false);
+           // var emuFactory = new AndroidSdkEmulatorFactory(logger, TestConfig.PathToAndroidEmulatorExe, adbFactory, TestConfig.AvdName, consolePort, true, false, emuId);
 
-            using (IEmulator droidEmulator = emuFactory.GetEmulator())
+            using (IAndroidEmulator droidEmulator = emuFactory.GetEmulator())
             {
                 await droidEmulator.Start(TestConfig.EmulatorStartupTimeout).ContinueWith((t) =>
                 {
+                    Assert.False(t.IsFaulted, "Exception occurred starting emulator: " + t.Exception?.ToString());
+
                     // sut
                     var adb = adbFactory.GetAndroidDebugBridge();
                     var currentDir = Environment.CurrentDirectory;
                     var apkPath = System.IO.Path.Combine("..\\..\\..\\", "SOMEOTHER.APK");
-                    adb.Install(droidEmulator.Device, apkPath, AdbInstallFlags.ReplaceExistingApplication);
 
-
-
+                    Assert.Throws<Exception>(() => adb.Install(droidEmulator.Device, apkPath, AdbInstallFlags.ReplaceExistingApplication));
+                    
                 });
-
-
             }
-
 
         }
 
+        [TestCase(AndroidEmulatorTypes.Microsoft)]
+        [TestCase(AndroidEmulatorTypes.AndroidSdk)]
         [Test]
-        [ExpectedException(typeof(TimeoutException))]
-        public async void Cannot_Proceed_Past_Timeout()
+        // [ExpectedException(typeof(TimeoutException))]
+        public async Task Cannot_Proceed_Past_Timeout(AndroidEmulatorTypes emulatorType)
         {
             var logger = new ConsoleLogger();
             Guid emuId = Guid.NewGuid();
@@ -154,7 +188,8 @@ namespace TestyDroid.Tests
             // Start an emulator.
             var adbFactory = new AndroidDebugBridgeFactory(TestConfig.PathToAdbExe);
             int consolePort = 5554;
-            var emuFactory = new AndroidSdkEmulatorFactory(logger, TestConfig.PathToAndroidEmulatorExe, adbFactory, TestConfig.AvdName, consolePort, true, false, emuId);
+            var emuFactory = GetEmulatorFactory(emulatorType, logger, adbFactory, consolePort, true, false);
+           // var emuFactory = new AndroidSdkEmulatorFactory(logger, TestConfig.PathToAndroidEmulatorExe, adbFactory, TestConfig.AvdName, consolePort, true, false, emuId);
 
             try
             {
@@ -163,14 +198,16 @@ namespace TestyDroid.Tests
                     TaskContinuationOptions y = new TaskContinuationOptions();
 
                     await droidEmulator.Start(TimeSpan.FromSeconds(5)).ContinueWith((t) =>
-                    {
+                    {                     
                         if (!t.IsFaulted)
                         {
                             Assert.Fail();
                         }
 
                         var exception = t.Exception.InnerExceptions[0];
-                        throw exception;
+
+                        Assert.Throws<TimeoutException>(() => { throw exception; });
+
 
                     });
 
@@ -181,18 +218,19 @@ namespace TestyDroid.Tests
                 var ex = e.InnerExceptions[0];
                 throw ex;
             }
-
-
-
         }
 
 
         [Test]
-        [TestCase(SingleInstanceMode.Abort)]
-        [TestCase(SingleInstanceMode.KillExisting)]
-        [TestCase(SingleInstanceMode.ReuseExisting)]
-        [TestCase(SingleInstanceMode.ReuseExistingThenKill)]
-        public async void Can_Detect_Existing_Device(SingleInstanceMode singleInstanceMode)
+        [TestCase(SingleInstanceMode.Abort, AndroidEmulatorTypes.Microsoft)]
+        [TestCase(SingleInstanceMode.KillExisting, AndroidEmulatorTypes.Microsoft)]
+        [TestCase(SingleInstanceMode.ReuseExisting, AndroidEmulatorTypes.Microsoft)]
+        [TestCase(SingleInstanceMode.ReuseExistingThenKill, AndroidEmulatorTypes.Microsoft)]
+        [TestCase(SingleInstanceMode.Abort, AndroidEmulatorTypes.AndroidSdk)]
+        [TestCase(SingleInstanceMode.KillExisting, AndroidEmulatorTypes.AndroidSdk)]
+        [TestCase(SingleInstanceMode.ReuseExisting, AndroidEmulatorTypes.AndroidSdk)]
+        [TestCase(SingleInstanceMode.ReuseExistingThenKill, AndroidEmulatorTypes.AndroidSdk)]
+        public async Task Can_Detect_Existing_Device(SingleInstanceMode singleInstanceMode, AndroidEmulatorTypes emulatorType)
         {
             var logger = new ConsoleLogger();
             Guid emuId = Guid.NewGuid();
@@ -200,12 +238,16 @@ namespace TestyDroid.Tests
             // Start an emulator.
             var adbFactory = new AndroidDebugBridgeFactory(TestConfig.PathToAdbExe);
             int consolePort = 5554;
-            var emuFactory = new AndroidSdkEmulatorFactory(logger, TestConfig.PathToAndroidEmulatorExe, adbFactory, TestConfig.AvdName, consolePort, true, false, emuId);
+            var emuFactory = GetEmulatorFactory(emulatorType, logger, adbFactory, consolePort, true, false);
+           // var emuFactory = new AndroidSdkEmulatorFactory(logger, TestConfig.PathToAndroidEmulatorExe, adbFactory, TestConfig.AvdName, consolePort, true, false, emuId);
 
             using (IEmulator droidEmulator = emuFactory.GetEmulator())
             {
                 await droidEmulator.Start(TestConfig.EmulatorStartupTimeout).ContinueWith((t) =>
                 {
+
+                    Assert.False(t.IsFaulted, "Exception occurred starting emulator: " + t.Exception?.ToString());
+
                     // sut
                     var adb = adbFactory.GetAndroidDebugBridge();
                     var devices = adb.GetDevices();
@@ -232,7 +274,7 @@ namespace TestyDroid.Tests
 
         [Test]
         public void Can_Restart()
-        {                     
+        {
             var adbFactory = new AndroidDebugBridgeFactory(TestConfig.PathToAdbExe);
             var adb = adbFactory.GetAndroidDebugBridge();
             adb.RestartServer();
@@ -241,4 +283,7 @@ namespace TestyDroid.Tests
 
 
     }
+
+
+   
 }

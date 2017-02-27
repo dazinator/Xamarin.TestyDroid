@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 namespace TestyDroid
 {
 
-    public class AndroidSdkEmulator : IEmulator
+    public class AndroidSdkEmulator : IAndroidEmulator
     {
 
         private ILogger _logger;
@@ -24,7 +24,7 @@ namespace TestyDroid
         private bool _noBootAnime;
         private bool _noWindow;
         private AndroidEmulatorInstanceResolver _instanceResolver;
-        private AndroidEmulatorInstanceInfo _instanceInfo;
+        private AndroidDeviceInstanceInfo _instanceInfo;
 
         public AndroidSdkEmulator(ILogger logger, string emulatorExePath, string avdName, IAndroidDebugBridgeFactory adbFactory, Guid id, int? consolePort, SingleInstanceMode instanceMode = SingleInstanceMode.KillExisting, bool noBootAnim = true, bool noWindow = true)
         {
@@ -186,7 +186,23 @@ namespace TestyDroid
         private void StartInstance()
         {
             _logger.LogMessage("Resolving emulator instance");
-            _instanceInfo = _instanceResolver.EnsureInstance(_instanceMode, _id, _avdName, _consolePort, _noBootAnime, _noWindow);
+            
+            _instanceInfo = _instanceResolver.EnsureInstance(_instanceMode, _consolePort, (argsBuilder)=> {
+                argsBuilder.AppendFormat("-avd {0}", _avdName);
+                if (_consolePort.HasValue && _consolePort != 0)
+                {
+                    argsBuilder.AppendFormat(" -port {0}", _consolePort);
+                }
+                if (_noBootAnime)
+                {
+                    argsBuilder.Append(" -no-boot-anim");
+                }
+                if (_noWindow)
+                {
+                    argsBuilder.Append(" -no-window");
+                }
+                argsBuilder.AppendFormat(" -prop emu.uuid={0}", _id);
+            });
             _instanceInfo.Start();
         }
 
@@ -273,7 +289,7 @@ namespace TestyDroid
             }
         }
 
-        public Device Device
+        public AndroidDevice Device
         {
             get
             {

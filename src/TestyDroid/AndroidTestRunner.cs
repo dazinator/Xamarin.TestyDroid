@@ -10,12 +10,12 @@ namespace TestyDroid
     {
         private ILogger _logger;
         private IAndroidDebugBridgeFactory _adbFactory;
-        private Device _androidDevice;
+        private AndroidDevice _androidDevice;
 
         private string _packageName;
         private string _runnerClass;
 
-        public AndroidTestRunner(ILogger logger, IAndroidDebugBridgeFactory adbFactory, Device device, string packageName, string runnerClass)
+        public AndroidTestRunner(ILogger logger, IAndroidDebugBridgeFactory adbFactory, AndroidDevice device, string packageName, string runnerClass)
         {
             _logger = logger;
             _androidDevice = device;

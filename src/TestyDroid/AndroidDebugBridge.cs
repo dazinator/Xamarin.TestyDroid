@@ -18,7 +18,7 @@ namespace TestyDroid
             _adbProcess = adbProcess;
         }
 
-        public string QueryProperty(Device device, string propertyName)
+        public string QueryProperty(AndroidDevice device, string propertyName)
         {
             StringBuilder args = new StringBuilder();
             if (device != null)
@@ -76,7 +76,7 @@ namespace TestyDroid
 
         }
 
-        public void KillDevice(Device device)
+        public void KillDevice(AndroidDevice device)
         {
             StringBuilder args = new StringBuilder();
             if (device != null)
@@ -87,7 +87,7 @@ namespace TestyDroid
             _adbProcess.Start(args.ToString());
         }
 
-        public void Install(Device device, string apkFilePath, AdbInstallFlags installFlags = AdbInstallFlags.None)
+        public void Install(AndroidDevice device, string apkFilePath, AdbInstallFlags installFlags = AdbInstallFlags.None)
         {
             StringBuilder args = new StringBuilder();
             if (device != null)
@@ -160,7 +160,7 @@ namespace TestyDroid
                 return value.ToString();
         }
 
-        public string StartInstrument(Device device, string packageName, string runnerClass, Action<string> onStdOut)
+        public string StartInstrument(AndroidDevice device, string packageName, string runnerClass, Action<string> onStdOut)
         {
             //   &quot;$(AndroidDebugBridgeExePath) & quot; shell am instrument - w $(AndroidTestsManifestPackageName) /$(AndroidTestsInstrumentationClassPath)
             StringBuilder args = new StringBuilder();
@@ -191,7 +191,7 @@ namespace TestyDroid
 
         }
 
-        public string ReadFileContents(Device device, string path)
+        public string ReadFileContents(AndroidDevice device, string path)
         {
             StringBuilder args = new StringBuilder();
             if (device != null)
